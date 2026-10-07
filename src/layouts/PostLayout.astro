@@ -1,0 +1,53 @@
+---
+import BaseLayout from './BaseLayout.astro';
+import Ascii from '../components/Ascii.astro';
+import { formatDate, minutes, type Note } from '../lib/site';
+
+interface Props {
+  note: Note;
+  prev?: Note | null;
+  next?: Note | null;
+}
+const { note, prev = null, next = null } = Astro.props;
+const { title, description, pubDate, updatedDate, tags, ascii } = note.data;
+---
+<BaseLayout title={title} description={description}>
+  <article>
+    <header class="post-header">
+      <h1>{title}</h1>
+      <div class="meta">
+        <time datetime={pubDate.toISOString()}>{formatDate(pubDate)}</time>
+        <span>{minutes(note)} min read</span>
+        {updatedDate && <span>updated {formatDate(updatedDate)}</span>}
+      </div>
+      <p class="lede">{description}</p>
+      {tags.length > 0 && (
+        <ul class="tags">
+          {tags.map((tag) => <li><a class="tag" href={`/tags/${tag}/`}>{tag}</a></li>)}
+        </ul>
+      )}
+    </header>
+
+    <div class="post-hero">
+      <Ascii
+        piece={ascii.piece}
+        options={ascii.options}
+        fps={ascii.fps}
+        mono={ascii.mono}
+        caption={ascii.caption ?? title}
+        label={`ascii art for the note “${title}”`}
+      />
+    </div>
+
+    <div class="prose">
+      <slot />
+    </div>
+
+    <footer class="post-footer">
+      <div class="tags" style="justify-content: space-between">
+        <span>{prev && <a href={`/notes/${prev.id}/`}>← {prev.data.title}</a>}</span>
+        <span>{next && <a href={`/notes/${next.id}/`}>{next.data.title} →</a>}</span>
+      </div>
+    </footer>
+  </article>
+</BaseLayout>

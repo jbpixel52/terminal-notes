@@ -1,0 +1,76 @@
+---
+/**
+ * <Ascii> — one animated piece of ascii art, from the catalogue in
+ * `ascii.rest` by @bas3line (MIT). The catalogue is imported at build time so
+ * a typo in a note's frontmatter fails the build instead of shipping an empty
+ * frame.
+ */
+import Ascii from 'ascii.rest/astro';
+import { names } from 'ascii.rest';
+
+interface Props {
+  piece: string;
+  options?: Record<string, unknown>;
+  fps?: number;
+  mono?: boolean;
+  label?: string;
+  caption?: string;
+  /** Set false for a bare piece, no frame or caption. */
+  framed?: boolean;
+  class?: string;
+}
+
+const {
+  piece,
+  options,
+  fps,
+  mono = false,
+  label,
+  caption,
+  framed = true,
+  class: className,
+} = Astro.props;
+
+if (!names.includes(piece as never)) {
+  const near = names.filter((n) => n.startsWith(piece.slice(0, 3))).slice(0, 6);
+  throw new Error(
+    `ascii: there is no piece named "${piece}". Closest: ${near.join(', ') || 'none'}. ` +
+      `See https://ascii.rest/ for the catalogue.`,
+  );
+}
+
+const credit = 'ascii.rest';
+---
+
+{
+  framed ? (
+    <figure class:list={['ascii-figure', className]}>
+      <div class="ascii-stage">
+        <Ascii
+          piece={piece as never}
+          options={options}
+          fps={fps}
+          mono={mono}
+          label={label ?? caption ?? `${piece} — animated ascii art`}
+          class={mono ? undefined : 'has-canvas'}
+        />
+      </div>
+      <figcaption>
+        <span>
+          <span class="piece-name">{piece}</span>
+          {caption ? ` — ${caption}` : ''}
+        </span>
+        <a href={`https://ascii.rest/${piece}/`} rel="noopener noreferrer">{credit}</a>
+      </figcaption>
+    </figure>
+  ) : (
+    <Ascii
+      piece={piece as never}
+      options={options}
+      fps={fps}
+      mono={mono}
+      label={label ?? caption ?? `${piece} — animated ascii art`}
+      class={className}
+    />
+  )
+}

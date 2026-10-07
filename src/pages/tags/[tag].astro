@@ -1,0 +1,23 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import NoteItem from '../../components/NoteItem.astro';
+import { getNotes, tagIndex } from '../../lib/site';
+
+export async function getStaticPaths() {
+  const notes = await getNotes();
+  return [...tagIndex(notes)].map(([tag, list]) => ({
+    params: { tag },
+    props: { tag, list },
+  }));
+}
+
+const { tag, list } = Astro.props;
+---
+<BaseLayout title={`#${tag}`} description={`Notes tagged ${tag}.`}>
+  <h1>#{tag}</h1>
+  <p class="lede">{list.length} note{list.length === 1 ? '' : 's'} tagged <code>{tag}</code>.</p>
+  <ul class="note-list">
+    {list.map((note) => <NoteItem note={note} />)}
+  </ul>
+  <p><a href="/tags/">← all tags</a></p>
+</BaseLayout>

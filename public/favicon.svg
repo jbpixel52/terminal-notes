@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <rect width="32" height="32" rx="4" fill="#0b0d11"/>
+  <g fill="#7ee787" font-family="monospace" font-size="8">
+    <text x="6" y="12">&gt;_</text>
+    <text x="6" y="22">▚</text>
+    <text x="16" y="22">▞</text>
+  </g>
+</svg>

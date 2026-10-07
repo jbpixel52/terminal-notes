@@ -1,0 +1,20 @@
+# Private terms — NOT committed to the repository.
+#
+# One term per line, case-insensitive, matched as a substring anywhere in
+# src/, public/, scripts/, README.md, ANONYMIZATION.md and the built HTML.
+# Lines starting with # are ignored.
+#
+# This file is git-ignored on purpose: a denylist committed to the tree would
+# itself publish the names it is meant to protect. Keep the mechanism in the
+# repository, keep the list on the machine.
+#
+# Placeholder entries below are examples of the *shape* to add. Replace them
+# with the real names, brands, hostnames and identifiers that must never be
+# published.
+
+EXAMPLE-client-name
+EXAMPLE-brand
+EXAMPLE-project-codename
+EXAMPLE-firstname
+EXAMPLE-surname
+EXAMPLE-username

@@ -1,0 +1,22 @@
+{
+  "name": "terminal-notes",
+  "type": "module",
+  "version": "1.0.0",
+  "private": true,
+  "description": "A blog of things learned about tech, servers and coding.",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "check": "astro check",
+    "anon": "node scripts/check-anonymized.mjs",
+    "verify": "node scripts/verify-site.mjs",
+    "ready": "npm run anon && npm run build"
+  },
+  "dependencies": {
+    "@astrojs/rss": "^4.0.19",
+    "@astrojs/sitemap": "^3.7.4",
+    "ascii.rest": "github:bas3line/ascii",
+    "astro": "^7.3.7"
+  }
+}

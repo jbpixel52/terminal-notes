@@ -1,0 +1,40 @@
+---
+import { NAV, SITE } from '../consts';
+const path = Astro.url.pathname.replace(/\/$/, '') || '/';
+const isCurrent = (href: string) =>
+  href === '/' ? path === '/' : path === href || path.startsWith(href + '/');
+---
+<header class="site-header">
+  <div class="wrap">
+    <a class="brand" href="/">{SITE.title}</a>
+    <nav class="site-nav" aria-label="Primary">
+      {NAV.map((item) => (
+        <a href={item.href} aria-current={isCurrent(item.href) ? 'page' : undefined}>
+          {item.label}
+        </a>
+      ))}
+      <button class="theme-toggle" type="button" data-theme-toggle aria-label="Switch colour theme">
+        [light]
+      </button>
+    </nav>
+  </div>
+</header>
+
+<script>
+  const root = document.documentElement;
+  const btn = document.querySelector<HTMLButtonElement>('[data-theme-toggle]');
+  const paint = () => {
+    const light = root.dataset.theme === 'light';
+    if (btn) btn.textContent = light ? '[dark]' : '[light]';
+  };
+  paint();
+  btn?.addEventListener('click', () => {
+    const light = root.dataset.theme === 'light';
+    if (light) delete root.dataset.theme;
+    else root.dataset.theme = 'light';
+    try {
+      localStorage.setItem('theme', light ? 'dark' : 'light');
+    } catch {}
+    paint();
+  });
+</script>

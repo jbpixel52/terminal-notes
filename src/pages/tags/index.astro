@@ -1,0 +1,25 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getNotes, tagIndex } from '../../lib/site';
+
+const notes = await getNotes();
+const tags = tagIndex(notes);
+---
+<BaseLayout title="Tags" description="Every tag in the notebook, with counts.">
+  <h1>tags</h1>
+  <p class="lede">Counts are notes per tag; a note can carry more than one.</p>
+  <ul class="note-list">
+    {[...tags].map(([tag, list]) => (
+      <li class="note-item">
+        <time>{list.length} note{list.length === 1 ? '' : 's'}</time>
+        <div>
+          <h3><a href={`/tags/${tag}/`}>#{tag}</a></h3>
+          <p class="desc">
+            {list.slice(0, 4).map((n) => n.data.title).join(' · ')}
+            {list.length > 4 ? ` … +${list.length - 4}` : ''}
+          </p>
+        </div>
+      </li>
+    ))}
+  </ul>
+</BaseLayout>

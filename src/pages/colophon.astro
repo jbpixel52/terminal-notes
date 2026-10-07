@@ -1,0 +1,70 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Ascii from '../components/Ascii.astro';
+import { getNotes } from '../lib/site';
+
+const notes = await getNotes();
+const pieces = [...new Set(notes.map((n) => n.data.ascii.piece))];
+const tags = new Set(notes.flatMap((n) => n.data.tags));
+---
+<BaseLayout title="Colophon" description="How this site is built, and how the privacy gate works.">
+  <h1>colophon</h1>
+  <div class="prose">
+    <Ascii piece="file-tree" caption="the whole site is a directory of markdown files" />
+
+    <p>How this notebook is put together, in case any of it is worth copying.</p>
+
+    <h2>Building</h2>
+    <ul>
+      <li><b>Astro</b>, static output. No server runtime, no database, no client-side router.</li>
+      <li>Notes are Markdown in <code>src/content/notes/</code>, read through a content collection with a typed frontmatter schema. A bad field fails the build.</li>
+      <li>The frontmatter names the ascii piece; the name is checked against the library catalogue at build time, so a typo is a build error instead of an empty frame.</li>
+      <li>Dates are formatted with an explicit <code>timeZone: 'UTC'</code> so two builds of the same commit produce identical HTML.</li>
+      <li>The only client-side JavaScript is the theme toggle and the ascii runtime. Nothing else ships.</li>
+    </ul>
+
+    <h2>The art</h2>
+    <p>
+      Every piece comes from <a href="https://ascii.rest/" rel="noopener noreferrer">ascii.rest</a>
+      by <a href="https://github.com/bas3line" rel="noopener noreferrer">@bas3line</a> (MIT),
+      imported as <code>ascii.rest/astro</code>. It renders the first frame on the server —
+      so the page is whole before any script runs — and starts animating once mounted.
+      Pieces only play while they intersect the viewport, and they hold their first frame
+      for readers who ask for reduced motion. All {pieces.length} pieces used here are
+      on the <a href="/art/">art page</a>.
+    </p>
+
+    <h2>The privacy gate</h2>
+    <p>
+      <code>scripts/check-anonymized.mjs</code> walks the sources, the public assets and
+      the built HTML and fails on:
+    </p>
+    <ul>
+      <li>email addresses and phone-number-shaped strings;</li>
+      <li>IPv4 addresses, except documentation ranges (<code>10.x</code>, <code>192.0.2.x</code>, <code>127.0.0.1</code>);</li>
+      <li>absolute paths that contain a username — <code>/home/…</code>, <code>/Users/…</code>, <code>C:\Users\…</code>;</li>
+      <li>credential shapes: <code>sk-…</code>, <code>ghp_…</code>, <code>AKIA…</code>, <code>Bearer …</code>, PEM headers;</li>
+      <li>every term listed in <code>.private-terms</code>, a git-ignored file holding the
+          names and identifiers that must never be published.</li>
+    </ul>
+    <p>
+      Keeping the private terms in a git-ignored file matters: a denylist committed to
+      the repository would itself be the leak. The script reports how many terms it
+      loaded, so an empty list is visible rather than silent.
+    </p>
+
+    <h2>Verification</h2>
+    <p>
+      <code>scripts/verify_site.py</code> starts a preview server, walks every route,
+      checks for non-200s, missing titles and console errors, asserts that each note page
+      actually contains a rendered ascii frame (a <code>&lt;canvas&gt;</code> or a
+      <code>&lt;pre&gt;</code> with content, not just an empty container), and writes
+      screenshots as evidence. A page that merely returns 200 is not a page that works.
+    </p>
+
+    <p>
+      Counts at the last build: {notes.length} notes, {tags.size} tags,
+      {pieces.length} distinct ascii pieces.
+    </p>
+  </div>
+</BaseLayout>

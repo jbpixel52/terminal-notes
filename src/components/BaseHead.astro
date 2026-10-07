@@ -1,0 +1,33 @@
+---
+import { SITE } from '../consts';
+
+interface Props { title: string; description: string; image?: string; }
+const { title, description } = Astro.props;
+const canonical = new URL(Astro.url.pathname, Astro.site ?? SITE.url);
+---
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="generator" content={Astro.generator} />
+<title>{title}</title>
+<meta name="description" content={description} />
+<link rel="canonical" href={canonical} />
+<meta name="color-scheme" content="dark light" />
+<meta property="og:type" content="website" />
+<meta property="og:title" content={title} />
+<meta property="og:description" content={description} />
+<meta property="og:url" content={canonical} />
+<meta name="twitter:card" content="summary" />
+<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+<link rel="alternate" type="application/rss+xml" title={SITE.title} href="/rss.xml" />
+<script is:inline>
+  // Set the theme before first paint so there is no flash.
+  (() => {
+    try {
+      const saved = localStorage.getItem('theme');
+      const prefersLight = window.matchMedia('(prefers-color-scheme: light)').matches;
+      if (saved === 'light' || (saved === null && prefersLight)) {
+        document.documentElement.dataset.theme = 'light';
+      }
+    } catch {}
+  })();
+</script>

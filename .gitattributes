@@ -1,0 +1,27 @@
+# Keep line endings predictable across Windows, macOS and CI.
+# A shell script or a Makefile committed from Windows with CRLF fails on Linux
+# with "^M: bad interpreter" or "missing separator".
+* text=auto eol=lf
+
+*.sh    text eol=lf
+*.py    text eol=lf
+*.mjs   text eol=lf
+*.ts    text eol=lf
+*.astro text eol=lf
+*.css   text eol=lf
+*.yml   text eol=lf
+*.yaml  text eol=lf
+*.md    text eol=lf
+*.json  text eol=lf
+Dockerfile text eol=lf
+
+*.bat   text eol=crlf
+*.cmd   text eol=crlf
+*.ps1   text eol=crlf
+
+# binary
+*.png   binary
+*.jpg   binary
+*.ico   binary
+*.woff  binary
+*.woff2 binary

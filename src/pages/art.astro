@@ -1,0 +1,22 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Ascii from '../components/Ascii.astro';
+import { getNotes } from '../lib/site';
+
+const notes = await getNotes();
+const pieces = [...new Set(notes.map((n) => n.data.ascii.piece))].sort();
+---
+<BaseLayout title="Art" description="Every ascii piece used on this site, in one place.">
+  <h1>art</h1>
+  <p class="lede">
+    {pieces.length} animated ascii pieces, one per note, all from
+    <a href="https://ascii.rest/" rel="noopener noreferrer">ascii.rest</a> by
+    <a href="https://github.com/bas3line" rel="noopener noreferrer">@bas3line</a> (MIT).
+    Pieces only animate while they are on screen.
+  </p>
+  <div class="grid-2 art-grid">
+    {pieces.map((piece) => (
+      <Ascii piece={piece} caption={`used on: ${notes.find((n) => n.data.ascii.piece === piece)?.data.title}`} />
+    ))}
+  </div>
+</BaseLayout>
