@@ -57,6 +57,18 @@ const tags = new Set(notes.flatMap((n) => n.data.tags));
       <code>src/art/sources.js</code>. Check the terms of anything you intend to publish.
     </p>
 
+    <h2>The background</h2>
+    <p>
+      The page ground is a grain gradient, in the spirit of the shader of that name at
+      <a href="https://shaders.paper.design/grain-gradient" rel="noopener noreferrer">shaders.paper.design</a>:
+      a flat base colour, four soft radial washes that drift over about a minute, and a fine
+      animated film grain over them. It is two fixed pseudo-elements and no JavaScript —
+      no WebGL, no shader library — because a runtime would have been the largest thing this
+      site shipped. The washes are custom properties, so the light theme uses ink-on-paper
+      tints rather than the dark colours inverted, and both layers stop moving for a reader
+      who has asked for reduced motion.
+    </p>
+
     <h2>The privacy gate</h2>
     <p>
       <code>scripts/check-anonymized.mjs</code> walks the sources, the public assets and
