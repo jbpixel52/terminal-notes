@@ -1,5 +1,6 @@
 ---
 import BaseLayout from './BaseLayout.astro';
+import Art from '../components/Art.astro';
 import Ascii from '../components/Ascii.astro';
 import { formatDate, minutes, type Note } from '../lib/site';
 
@@ -7,47 +8,86 @@ interface Props {
   note: Note;
   prev?: Note | null;
   next?: Note | null;
+  headings?: { depth: number; slug: string; text: string }[];
 }
-const { note, prev = null, next = null } = Astro.props;
+const { note, prev = null, next = null, headings = [] } = Astro.props;
 const { title, description, pubDate, updatedDate, tags, ascii } = note.data;
+
+// the rail's table of contents: the note's own top-level sections
+const sections = headings.filter((h) => h.depth === 2);
 ---
 <BaseLayout title={title} description={description}>
   <article>
-    <header class="post-header">
-      <h1>{title}</h1>
-      <div class="meta">
-        <time datetime={pubDate.toISOString()}>{formatDate(pubDate)}</time>
-        <span>{minutes(note)} min read</span>
-        {updatedDate && <span>updated {formatDate(updatedDate)}</span>}
+    <div class="note-shell">
+      <header class="post-header">
+        <h1>{title}</h1>
+        <div class="meta">
+          <time datetime={pubDate.toISOString()}>{formatDate(pubDate)}</time>
+          <span>{minutes(note)} min read</span>
+          {updatedDate && <span>updated {formatDate(updatedDate)}</span>}
+        </div>
+        <p class="lede">{description}</p>
+        {tags.length > 0 && (
+          <ul class="tags">
+            {tags.map((tag) => <li><a class="tag" href={`/tags/${tag}/`}>{tag}</a></li>)}
+          </ul>
+        )}
+      </header>
+
+      <div class="post-hero">
+        {ascii.art ? (
+          <Art slug={ascii.art} caption={ascii.caption} label={`ascii art for “${title}”`} />
+        ) : (
+          <Ascii
+            piece={ascii.piece!}
+            options={ascii.options}
+            fps={ascii.fps}
+            mono={ascii.mono}
+            caption={ascii.caption ?? title}
+            label={`ascii art for “${title}”`}
+          />
+        )}
       </div>
-      <p class="lede">{description}</p>
-      {tags.length > 0 && (
-        <ul class="tags">
-          {tags.map((tag) => <li><a class="tag" href={`/tags/${tag}/`}>{tag}</a></li>)}
-        </ul>
-      )}
-    </header>
 
-    <div class="post-hero">
-      <Ascii
-        piece={ascii.piece}
-        options={ascii.options}
-        fps={ascii.fps}
-        mono={ascii.mono}
-        caption={ascii.caption ?? title}
-        label={`ascii art for the note “${title}”`}
-      />
-    </div>
+      <div class="note-grid">
+        <div class="prose">
+          <slot />
+        </div>
 
-    <div class="prose">
-      <slot />
-    </div>
+        <aside class="note-rail" aria-label="About this note">
+          {sections.length > 1 && (
+            <nav class="rail-block">
+              <h2 class="rail-title">on this page</h2>
+              <ol class="rail-toc">
+                {sections.map((h) => <li><a href={`#${h.slug}`}>{h.text}</a></li>)}
+              </ol>
+            </nav>
+          )}
 
-    <footer class="post-footer">
-      <div class="tags" style="justify-content: space-between">
-        <span>{prev && <a href={`/notes/${prev.id}/`}>← {prev.data.title}</a>}</span>
-        <span>{next && <a href={`/notes/${next.id}/`}>{next.data.title} →</a>}</span>
+          <div class="rail-block">
+            <h2 class="rail-title">meta</h2>
+            <dl class="rail-meta">
+              <dt>published</dt>
+              <dd><time datetime={pubDate.toISOString()}>{formatDate(pubDate)}</time></dd>
+              <dt>reading</dt>
+              <dd>{minutes(note)} min</dd>
+              <dt>tags</dt>
+              <dd class="rail-tags">
+                {tags.map((tag) => <a class="tag" href={`/tags/${tag}/`}>{tag}</a>)}
+              </dd>
+            </dl>
+          </div>
+
+          <nav class="rail-block">
+            <h2 class="rail-title">nearby</h2>
+            <ul class="rail-links">
+              {prev && <li><a href={`/notes/${prev.id}/`}>← {prev.data.title}</a></li>}
+              {next && <li><a href={`/notes/${next.id}/`}>{next.data.title} →</a></li>}
+              <li><a href="/notes/">all notes</a></li>
+            </ul>
+          </nav>
+        </aside>
       </div>
-    </footer>
+    </div>
   </article>
 </BaseLayout>

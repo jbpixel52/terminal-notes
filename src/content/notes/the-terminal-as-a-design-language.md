@@ -5,8 +5,7 @@ pubDate: 2026-05-29
 tags: [design, web, css]
 minutes: 7
 ascii:
-  piece: matrix-rain
-  caption: "rain, in one ink"
+  art: the-terminal-as-a-design-language
 ---
 
 Designing a page to look like a terminal is not a novelty any more, which

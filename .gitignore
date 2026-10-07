@@ -8,6 +8,10 @@ node_modules/
 # research scratch (raw session mining, pre-anonymisation)
 .research/
 
+# source photographs for the ascii art (see tools/make-art.py); only the
+# generated modules in src/art/ are published
+.art-src/
+
 # the private term list is machine-local on purpose: a committed denylist
 # would publish the names it is meant to protect
 .private-terms

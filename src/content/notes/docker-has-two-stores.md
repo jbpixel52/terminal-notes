@@ -5,8 +5,7 @@ pubDate: 2026-10-02
 tags: [docker, storage, servers]
 minutes: 6
 ascii:
-  piece: falling-sand
-  caption: "data, landing somewhere you did not choose"
+  art: docker-has-two-stores
 ---
 
 The recipe for getting Docker off the system disk is well known: set

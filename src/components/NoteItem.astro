@@ -12,9 +12,6 @@ const { title, description, pubDate, tags, ascii } = note.data;
     <h3><a href={`/notes/${note.id}/`}>{title}</a></h3>
     <p class="desc">{description}</p>
     <div class="meta">
-      <span class="glyph" aria-hidden="true">
-        {showGlyph ? `▚ ${ascii.piece}` : ''}
-      </span>
       <span>{minutes(note)} min</span>
       {tags.length > 0 && (
         <span class="tags">

@@ -5,8 +5,7 @@ pubDate: 2026-08-27
 tags: [networking, security, homelab]
 minutes: 6
 ascii:
-  piece: tunnel
-  caption: "a private road, no port forwarding required"
+  art: reaching-a-service-over-a-tailnet
 ---
 
 The pitch of a mesh VPN is that you stop opening ports: each machine gets

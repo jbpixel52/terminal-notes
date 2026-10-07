@@ -60,6 +60,19 @@ including occurrences inside the built HTML.
 - Check the *sums*: a version, a date, a headcount and an industry together
   can identify a customer with no name in sight.
 
+## What the scan deliberately skips
+
+Generated ascii art (`src/art/pieces/*.js`, and the same art rendered into the
+built HTML) is machine output: thousands of cells of punctuation decoded from a
+photograph. It matches address-shaped patterns by accident — the first run of
+the gate flagged a run of digits and brackets as a phone number — so its glyphs
+and colour blob are removed before scanning, while every human-written part of
+the module (its header comment, the note text, the source url) is still scanned.
+
+The run reports how many files had art removed, so the narrowing is visible
+rather than silent. Everything else — prose, frontmatter, captions, code,
+metadata — is scanned whole.
+
 ## Before publishing
 
 ```bash

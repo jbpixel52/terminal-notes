@@ -5,8 +5,7 @@ pubDate: 2026-06-17
 tags: [mobile, architecture, databases]
 minutes: 8
 ascii:
-  piece: pond-ripples
-  caption: "writes spreading out, arriving eventually"
+  art: offline-first-sync-and-the-queue-that-survives-a-crash
 ---
 
 An app that works in a basement with no signal is a different design from an

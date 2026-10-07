@@ -7,22 +7,41 @@ const notes = await getNotes();
 const tags = tagIndex(notes);
 ---
 <BaseLayout title="Notes" description={`All ${notes.length} notes, newest first.`}>
-  <h1>notes</h1>
-  <p class="lede">
-    {notes.length} entries. Everything here is something that went wrong first, or a thing I
-    assumed and then checked. Newest first.
-  </p>
-  <ul class="note-list">
-    {notes.map((note) => <NoteItem note={note} />)}
-  </ul>
+  <div class="page-grid">
+    <div class="page-main bleed">
+      <h1>notes</h1>
+      <p class="lede">
+        {notes.length} entries. Everything here is something that went wrong first, or a
+        thing I assumed and then checked. Newest first.
+      </p>
+    </div>
 
-  <h2 class="no-hash">by tag</h2>
-  <ul class="tag-cloud">
-    {[...tags].map(([tag, list]) => (
-      <li>
-        <a class="tag" href={`/tags/${tag}/`}>{tag}</a>{' '}
-        <span class="count">{list.length}</span>
-      </li>
-    ))}
-  </ul>
+    <div class="page-main">
+      <ul class="note-list">
+        {notes.map((note) => <NoteItem note={note} />)}
+      </ul>
+    </div>
+
+    <aside class="page-rail" aria-label="Index">
+      <nav class="rail-block" aria-label="Tags">
+        <h2 class="rail-title">by tag</h2>
+        <ul class="tag-cloud">
+          {[...tags].map(([tag, list]) => (
+            <li>
+              <a class="tag" href={`/tags/${tag}/`}>{tag}</a>{' '}
+              <span class="count">{list.length}</span>
+            </li>
+          ))}
+        </ul>
+      </nav>
+      <nav class="rail-block" aria-label="Elsewhere">
+        <h2 class="rail-title">elsewhere</h2>
+        <ul class="rail-links">
+          <li><a href="/">the front page</a></li>
+          <li><a href="/art/">the art</a></li>
+          <li><a href="/tags/">all tags</a></li>
+        </ul>
+      </nav>
+    </aside>
+  </div>
 </BaseLayout>

@@ -5,8 +5,7 @@ pubDate: 2026-05-20
 tags: [automation, workflow, agents]
 minutes: 7
 ascii:
-  piece: starlings
-  caption: "many small decisions, one shape"
+  art: delegating-work-to-parallel-agents
 ---
 
 Splitting a job across several autonomous workers is mostly a coordination

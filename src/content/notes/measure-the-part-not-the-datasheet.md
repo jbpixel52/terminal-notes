@@ -5,8 +5,7 @@ pubDate: 2026-05-11
 tags: [hardware, 3d-printing, process]
 minutes: 6
 ascii:
-  piece: cube
-  caption: "the part, before it exists"
+  art: measure-the-part-not-the-datasheet
 ---
 
 Designing a case for a board, a bracket for a disk, or a panel for a

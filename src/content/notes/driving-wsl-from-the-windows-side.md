@@ -5,8 +5,7 @@ pubDate: 2026-08-19
 tags: [wsl, windows, linux, tooling]
 minutes: 7
 ascii:
-  piece: tux
-  caption: "a penguin living inside windows"
+  art: driving-wsl-from-the-windows-side
 ---
 
 Running a Linux environment inside Windows is the pragmatic choice for

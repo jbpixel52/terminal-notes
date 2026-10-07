@@ -18,8 +18,8 @@ export async function getStaticPaths() {
 
 interface Props { note: Note; prev: Note | null; next: Note | null; }
 const { note, prev, next } = Astro.props;
-const { Content } = await render(note);
+const { Content, headings } = await render(note);
 ---
-<PostLayout note={note} prev={prev} next={next}>
+<PostLayout note={note} prev={prev} next={next} headings={headings}>
   <Content />
 </PostLayout>

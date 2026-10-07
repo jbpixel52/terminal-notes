@@ -119,7 +119,7 @@ def main() -> int:
         browser = p.chromium.launch()
         # dark, explicitly: the site's own default, not the headless default
         ctx = browser.new_context(
-            viewport={"width": 1280, "height": 900}, color_scheme="dark"
+            viewport={"width": 1600, "height": 1000}, color_scheme="dark"
         )
         page = ctx.new_page()
 
@@ -169,6 +169,41 @@ def main() -> int:
                         f"ascii rendered {route} [{piece}]",
                         "element present but nothing drawn",
                     )
+
+            # generated pieces: a canvas that must have actually painted, at the
+            # container's width, once it scrolls into view. Two per page is
+            # enough — the gallery page has 22 and each costs a decode.
+            stages = page.locator(".art-stage")
+            for i in range(min(stages.count(), 2)):
+                stage = stages.nth(i)
+                stage.scroll_into_view_if_needed()
+                page.wait_for_timeout(1500)  # let the decode finish, then judge it
+                canvas = stage.locator("canvas")
+                slug = canvas.get_attribute("data-art")
+                box = canvas.bounding_box()
+                px = canvas.evaluate("(c) => [c.width, c.height]")
+                check(
+                    box is not None and box["width"] > 60 and px[0] > 60 and px[1] > 60,
+                    f"art mounted {route} [{slug}]",
+                    f"box={box} canvas px={px}",
+                )
+                # and the picture is not blank: some pixels differ from the ground
+                distinct = canvas.evaluate(
+                    """(c) => {
+                      const d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data;
+                      const seen = new Set();
+                      for (let i = 0; i < d.length; i += 4 * 97) {
+                        seen.add((d[i] >> 4) + ',' + (d[i+1] >> 4) + ',' + (d[i+2] >> 4));
+                        if (seen.size > 6) break;
+                      }
+                      return seen.size;
+                    }"""
+                )
+                check(
+                    distinct > 4,
+                    f"art has detail {route} [{slug}]",
+                    f"only {distinct} distinct colours sampled",
+                )
 
             if route.startswith("/notes/") and route != "/notes/":
                 note_routes.append(route)
@@ -226,12 +261,13 @@ def main() -> int:
         page.screenshot(path=str(out / "note-bottom.png"), full_page=False)
 
         # --- theme toggle (order-independent: read, flip, read) -------------
-        # the palette lives in custom properties on :root and in the body's
-        # background-color, so test both (the body colour is what a reader sees)
+        # the ground colour is on <html> (the body is transparent so the grain
+        # gradient can sit behind it), so measure there and on the washes
         page.goto(args.base_url + "/", wait_until="networkidle")
         probe = (
             "() => [getComputedStyle(document.documentElement).getPropertyValue('--bg').trim(),"
-            " getComputedStyle(document.body).backgroundColor,"
+            " getComputedStyle(document.documentElement).backgroundColor,"
+            " getComputedStyle(document.documentElement).getPropertyValue('--wash-1').trim(),"
             " document.documentElement.dataset.theme || 'dark']"
         )
         r0 = page.evaluate(probe)
@@ -239,14 +275,16 @@ def main() -> int:
         page.wait_for_timeout(250)
         r1 = page.evaluate(probe)
         check(
-            r1[2] != r0[2] and r1[0] != r0[0] and r1[1] != r0[1],
+            r1[3] != r0[3] and r1[0] != r0[0] and r1[1] != r0[1] and r1[2] != r0[2],
             "theme toggle switches palette",
             f"{r0} -> {r1}",
         )
         page.reload(wait_until="networkidle")
+        after_theme = page.evaluate("() => document.documentElement.dataset.theme || 'dark'")
         check(
-            page.evaluate("() => document.documentElement.dataset.theme || 'dark'") == r1[2],
+            after_theme == r1[3],
             "theme choice survives a reload",
+            f"after reload: {after_theme}, expected {r1[3]}",
         )
         page.screenshot(path=str(out / "home-toggled.png"), full_page=False)
 
@@ -266,9 +304,51 @@ def main() -> int:
         lp.screenshot(path=str(out / "home-os-light.png"), full_page=False)
         light_ctx.close()
 
+        # --- the grain gradient is actually painted --------------------------
+        # two fixed layers behind the content: washes and grain. A stylesheet
+        # that failed to load, or a pseudo-element that never rendered, would
+        # leave both empty.
+        page.goto(args.base_url + "/", wait_until="networkidle")
+        layers = page.evaluate(
+            """() => {
+              const w = getComputedStyle(document.body, '::before');
+              const g = getComputedStyle(document.body, '::after');
+              return {
+                washes: (w.backgroundImage.match(/radial-gradient/g) || []).length,
+                washAnim: w.animationName,
+                grain: g.backgroundImage.includes('svg') && g.backgroundImage.length > 200,
+                grainOpacity: parseFloat(g.opacity),
+                grainAnim: g.animationName,
+                position: w.position,
+              };
+            }"""
+        )
+        check(
+            layers["washes"] >= 4 and layers["grain"] and layers["grainOpacity"] > 0.01,
+            "grain gradient layers are painted",
+            str(layers),
+        )
+        check(
+            layers["position"] == "fixed",
+            "the gradient sits behind the page and does not scroll",
+            str(layers),
+        )
+
         browser.close()
 
     # --- counts must agree with the build -------------------------------
+    # every picture must be in the HTML itself, for readers without JavaScript
+    missing_still = []
+    for html in sorted(dist.rglob("*.html")):
+        text = html.read_text(encoding="utf-8", errors="ignore")
+        if "art-stage" in text and '<pre class="art-still"' not in text:
+            missing_still.append(str(html.relative_to(dist)))
+    check(
+        not missing_still,
+        f"no-JS still present in every built page with art ({len(missing_still)} missing)",
+        ", ".join(missing_still[:3]),
+    )
+
     print()
     print(f"routes checked      : {len(routes)}")
     print(f"note pages          : {len(note_routes)}")

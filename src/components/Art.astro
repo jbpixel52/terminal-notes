@@ -1,0 +1,122 @@
+---
+/**
+ * <Art> — a generated ascii piece: a photograph decoded onto a character grid,
+ * shipped as a local piece module in `src/art/<slug>.js` (the ascii.rest shape:
+ * `meta` + a default frame function, with `meta.palette` for colour).
+ *
+ * Three readers, three experiences, all from the same module:
+ *   - no JavaScript: the finished picture, in one ink, in a <pre>;
+ *   - prefers-reduced-motion: the same, and the piece is never mounted;
+ *   - everyone else: the picture decodes into colour on a canvas when it
+ *     scrolls into view.
+ */
+import { getSource } from '../art/sources';
+
+interface Props {
+  slug: string;
+  caption?: string;
+  label?: string;
+  /** false: no figure, no caption — the picture straight into the page. */
+  framed?: boolean;
+  class?: string;
+}
+
+const { slug, caption, label, framed = true, class: className } = Astro.props;
+
+const modules = import.meta.glob('../art/pieces/*.js');
+const key = `../art/pieces/${slug}.js`;
+if (!(key in modules)) {
+  throw new Error(
+    `art: there is no piece module at src/art/pieces/${slug}.js. ` +
+      `Generate one with \`python tools/make-art.py --only ${slug}\`.`,
+  );
+}
+
+const mod = (await modules[key]()) as {
+  meta: { name: string; cols: number; rows: number; cell?: number; note?: string; fps: number };
+  still: string;
+};
+const { meta } = mod;
+const source = getSource(slug);
+const aspect = meta.cols / (meta.rows * (meta.cell ?? 2));
+const alt = label ?? meta.note ?? `${slug}, as ascii art`;
+
+const stageStyle = `--art-cols: ${meta.cols}; --art-aspect: ${aspect}`;
+---
+
+{
+  framed ? (
+    <figure class:list={['ascii-figure', className]}>
+      <div class="art-stage" style={stageStyle}>
+        <pre class="art-still" role="img" aria-label={alt}>{mod.still}</pre>
+        <canvas class="art-canvas" data-art={slug} hidden aria-hidden="true" />
+      </div>
+      <figcaption>
+        <span>
+          <span class="piece-name">{meta.name}</span>
+          {caption ? ` — ${caption}` : ` — ${meta.note}`}
+        </span>
+        {source ? (
+          <a href={source.page} rel="noopener noreferrer" title={`wallhaven ${source.id} · "${source.query}"`}>
+            source image ↗
+          </a>
+        ) : null}
+      </figcaption>
+    </figure>
+  ) : (
+    <div class:list={['art-bare', className]}>
+      <div class="art-stage" style={stageStyle}>
+        <pre class="art-still" role="img" aria-label={alt}>{mod.still}</pre>
+        <canvas class="art-canvas" data-art={slug} hidden aria-hidden="true" />
+      </div>
+    </div>
+  )
+}
+
+<script>
+  import { mount } from 'ascii.rest';
+
+  // Vite turns this into one lazy chunk per piece, so a page only downloads
+  // the art it shows.
+  const modules = import.meta.glob('../art/pieces/*.js');
+
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)');
+
+  for (const stage of document.querySelectorAll<HTMLElement>('.art-stage')) {
+    const canvas = stage.querySelector<HTMLCanvasElement>('canvas[data-art]');
+    const still = stage.querySelector<HTMLElement>('pre.art-still');
+    const slug = canvas?.dataset.art;
+    if (!canvas || !slug) continue;
+
+    const play = async () => {
+      // The still is the picture; only swap once the canvas has been mounted,
+      // so a reader who asked for less motion never sees the decode.
+      if (reduce.matches) return;
+      const load = modules[`../art/pieces/${slug}.js`];
+      if (!load) return;
+      const mod = (await load()) as {
+        meta: { fps: number };
+        default: (options?: unknown) => unknown;
+      };
+      canvas.hidden = false;
+      if (still) still.hidden = true;
+      // pass the module, not the frame: mount reads `meta` for the grid size,
+      // the palette and the ground, and calls `default` itself
+      mount(canvas, mod as never, { fps: mod.meta.fps });
+    };
+
+    // 22 pieces on the gallery page must not all decode at once. Observe the
+    // stage, not the canvas: the canvas is `hidden` until it mounts, and a
+    // display:none element never intersects anything.
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) {
+          io.disconnect();
+          void play();
+        }
+      },
+      { rootMargin: '250px' },
+    );
+    io.observe(stage);
+  }
+</script>

@@ -5,8 +5,7 @@ pubDate: 2026-07-15
 tags: [databases, security, testing]
 minutes: 8
 ascii:
-  piece: radar
-  caption: "probing the perimeter, from the outside"
+  art: proving-row-level-security
 ---
 
 Row-level security is the mechanism that makes a multi-tenant database safe

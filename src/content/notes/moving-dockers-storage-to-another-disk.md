@@ -5,8 +5,7 @@ pubDate: 2026-09-20
 tags: [docker, servers, storage]
 minutes: 7
 ascii:
-  piece: whale
-  caption: "the whale moved house"
+  art: moving-dockers-storage-to-another-disk
 ---
 
 A host with a small system disk and a large data disk, filling up anyway. The

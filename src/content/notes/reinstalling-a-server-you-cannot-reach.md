@@ -5,8 +5,7 @@ pubDate: 2026-08-05
 tags: [linux, virtualization, servers, hardware]
 minutes: 8
 ascii:
-  piece: boot-log
-  caption: "the first thing you see, or the last"
+  art: reinstalling-a-server-you-cannot-reach
 ---
 
 A headless box in another room with no serial console and no remote

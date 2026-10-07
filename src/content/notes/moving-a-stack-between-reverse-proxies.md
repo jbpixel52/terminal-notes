@@ -5,8 +5,7 @@ pubDate: 2026-09-12
 tags: [docker, networking, servers]
 minutes: 7
 ascii:
-  piece: train
-  caption: "same rails, different engine"
+  art: moving-a-stack-between-reverse-proxies
 ---
 
 A reverse proxy that reads Docker labels is a very pleasant thing: a stack

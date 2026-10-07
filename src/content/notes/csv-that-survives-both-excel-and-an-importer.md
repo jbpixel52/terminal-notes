@@ -5,8 +5,7 @@ pubDate: 2026-07-24
 tags: [data, tooling, testing]
 minutes: 7
 ascii:
-  piece: heatmap
-  caption: "rows and columns, all of them accounted for"
+  art: csv-that-survives-both-excel-and-an-importer
 ---
 
 Generating a CSV that a person opens in a spreadsheet *and* a system imports

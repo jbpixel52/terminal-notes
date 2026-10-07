@@ -5,8 +5,7 @@ pubDate: 2026-08-02
 tags: [testing, browser, verification]
 minutes: 7
 ascii:
-  piece: spinners
-  caption: "waiting for the right moment, not a fixed timeout"
+  art: an-element-existing-is-not-a-page-rendering
 ---
 
 Automated browser checks are the only way to prove a web page works, and they

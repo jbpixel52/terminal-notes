@@ -5,8 +5,7 @@ pubDate: 2026-06-26
 tags: [git, workflow]
 minutes: 7
 ascii:
-  piece: maze
-  caption: "two paths through the same history"
+  art: the-conflict-you-cannot-see
 ---
 
 A merge conflict is a state machine with a few sharp edges. Nothing here is

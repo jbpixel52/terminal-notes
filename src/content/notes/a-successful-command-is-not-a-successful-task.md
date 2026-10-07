@@ -5,8 +5,7 @@ pubDate: 2026-09-28
 tags: [testing, methodology, verification]
 minutes: 6
 ascii:
-  piece: gauge
-  caption: "measuring the thing, not the report of the thing"
+  art: a-successful-command-is-not-a-successful-task
 ---
 
 Most of the expensive mistakes I have made were not crashes. They were

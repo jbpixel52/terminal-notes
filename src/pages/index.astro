@@ -7,42 +7,66 @@ import { SITE } from '../consts';
 
 const notes = await getNotes();
 const tags = tagIndex(notes);
-const recent = notes.slice(0, 6);
-const pieces = new Set(notes.map((n) => n.data.ascii.piece));
+const recent = notes.slice(0, 7);
+const pictures = notes.map((n) => n.data.ascii.art ?? n.data.ascii.piece);
+const pictures_ = new Set(pictures).size;
 ---
 <BaseLayout>
-  <section class="hero">
-    <h1 class="sr-only">{SITE.title} — {SITE.tagline}</h1>
-    <div class="prompt" aria-hidden="true">~/notes $ ls -1 --recent</div>
-    <div class="bare-art">
-      <Ascii
-        piece="big-text"
-        options={{ text: 'notes' }}
-        framed={false}
-        label={`${SITE.title}, in big ascii letters`}
-      />
+  <div class="page-grid">
+    <section class="hero bleed">
+      <h1 class="sr-only">{SITE.title} — {SITE.tagline}</h1>
+      <div class="prompt" aria-hidden="true">~/notes $ ls -1 --recent</div>
+      <div class="bare-art">
+        <Ascii
+          piece="big-text"
+          options={{ text: 'notes' }}
+          framed={false}
+          label={`${SITE.title}, in big ascii letters`}
+        />
+      </div>
+      <p class="lede">{SITE.description}</p>
+    </section>
+
+    <div class="page-main">
+      <h2 class="no-hash">latest</h2>
+      <ul class="note-list">
+        {recent.map((note) => <NoteItem note={note} />)}
+      </ul>
+      <p><a href="/notes/">all {notes.length} notes →</a></p>
     </div>
-    <p class="lede">{SITE.description}</p>
-    <ul class="stat-row">
-      <li><b>{notes.length}</b><span>notes</span></li>
-      <li><b>{tags.size}</b><span>tags</span></li>
-      <li><b>{pieces.size}</b><span>ascii pieces</span></li>
-    </ul>
-  </section>
 
-  <h2 class="no-hash">latest</h2>
-  <ul class="note-list">
-    {recent.map((note) => <NoteItem note={note} />)}
-  </ul>
-  <p><a href="/notes/">all {notes.length} notes →</a></p>
+    <aside class="page-rail" aria-label="Notebook index">
+      <div class="rail-block">
+        <h2 class="rail-title">this notebook</h2>
+        <dl class="rail-meta">
+          <dt>notes</dt><dd>{notes.length}</dd>
+          <dt>tags</dt><dd>{tags.size}</dd>
+          <dt>pictures</dt><dd>{pictures_} ascii pieces</dd>
+          <dt>built</dt><dd>static, no trackers</dd>
+        </dl>
+      </div>
 
-  <h2 class="no-hash">tags</h2>
-  <ul class="tag-cloud">
-    {[...tags].map(([tag, list]) => (
-      <li>
-        <a class="tag" href={`/tags/${tag}/`}>{tag}</a>{' '}
-        <span class="count">{list.length}</span>
-      </li>
-    ))}
-  </ul>
+      <nav class="rail-block" aria-label="Tags">
+        <h2 class="rail-title">tags</h2>
+        <ul class="tag-cloud">
+          {[...tags].map(([tag, list]) => (
+            <li>
+              <a class="tag" href={`/tags/${tag}/`}>{tag}</a>{' '}
+              <span class="count">{list.length}</span>
+            </li>
+          ))}
+        </ul>
+      </nav>
+
+      <nav class="rail-block" aria-label="Elsewhere">
+        <h2 class="rail-title">elsewhere</h2>
+        <ul class="rail-links">
+          <li><a href="/notes/">every note</a></li>
+          <li><a href="/art/">the art</a></li>
+          <li><a href="/about/">about</a></li>
+          <li><a href="/colophon/">colophon</a></li>
+        </ul>
+      </nav>
+    </aside>
+  </div>
 </BaseLayout>

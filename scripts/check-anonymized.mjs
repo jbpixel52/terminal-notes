@@ -30,7 +30,7 @@ const TERMS_FILE = flag('--terms', '.private-terms');
 const QUIET = args.includes('--quiet');
 
 /** Directories walked, in order. `dist` is optional (needs a build first). */
-const ROOTS = ['src', 'scripts', 'public', 'README.md', 'ANONYMIZATION.md', 'package.json', 'astro.config.mjs', 'dist'];
+const ROOTS = ['src', 'scripts', 'tools', 'public', 'README.md', 'ANONYMIZATION.md', 'package.json', 'astro.config.mjs', 'dist'];
 const SKIP_DIRS = new Set(['node_modules', '.git', '.astro', '.verify', '.research', 'dist/assets']);
 
 /** Only these are scanned inside dist/: the published documents, not the JS. */
@@ -123,6 +123,36 @@ function isScannable(file) {
   return true;
 }
 
+/**
+ * The text worth scanning in a file.
+ *
+ * Generated art is machine output: 4,884 cells of punctuation decoded from a
+ * photograph, plus a base64 colour blob. It matches address-shaped patterns at
+ * random — the first run flagged a run of digits and brackets as a phone
+ * number — so its glyphs and blob are dropped before scanning, while every
+ * human-written part of the module stays: the header comment, the note, the
+ * source url. The same applies to the art rendered into the built HTML.
+ *
+ * This is a deliberate narrowing, so it is reported: the run says how many
+ * files had text removed for scanning.
+ */
+function textForScan(file, raw) {
+  const normalised = file.split(sep).join('/');
+  if (normalised.includes('src/art/pieces/')) {
+    return raw
+      .split(/\r?\n/)
+      .filter((line) => /^\s*(\/\*|\*|\/\/)/.test(line) || /^\s*(name|note|category|source):/.test(line))
+      .join('\n');
+  }
+  if (normalised.startsWith('dist/')) {
+    return raw.replace(
+      /<pre class="art-still"[^>]*>[\s\S]*?<\/pre>/g,
+      '<pre class="art-still">[art removed before scanning]</pre>',
+    );
+  }
+  return raw;
+}
+
 // --- load the private term list -------------------------------------------
 
 let terms = [];
@@ -144,15 +174,18 @@ const scannable = files.filter(isScannable);
 const findings = [];
 let bytes = 0;
 let read = 0;
+let reduced = 0;
 
 for (const file of scannable) {
-  let text;
+  let raw;
   try {
-    text = readFileSync(file, 'utf8');
+    raw = readFileSync(file, 'utf8');
   } catch {
     continue; // binary
   }
-  if (text.includes('\u0000')) continue; // binary
+  if (raw.includes('\u0000')) continue; // binary
+  const text = textForScan(file, raw);
+  if (text.length !== raw.length) reduced += 1;
   read += 1;
   bytes += Buffer.byteLength(text);
 
@@ -190,6 +223,9 @@ const rel = (f) => relative(process.cwd(), f).split(sep).join('/');
 if (!QUIET) {
   console.log(`scanned ${read} files (${(bytes / 1024).toFixed(1)} KB) across: ${ROOTS.join(', ')}`);
   console.log(`term list: ${terms.length} term${terms.length === 1 ? '' : 's'} from ${termsSource}`);
+  if (reduced) {
+    console.log(`  ${reduced} file(s) had generated art removed before scanning (see textForScan)`);
+  }
   if (terms.length === 0) {
     console.log('  note: no terms loaded — private names in the text would NOT be caught by the term checks');
   }

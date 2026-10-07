@@ -5,8 +5,7 @@ pubDate: 2026-05-02
 tags: [backups, storage, homelab, verification]
 minutes: 7
 ascii:
-  piece: hourglass
-  caption: "the clock you cannot restart"
+  art: a-backup-you-never-restored-is-a-hypothesis
 ---
 
 Everyone has a backup. Almost nobody has a restore. The gap between those two

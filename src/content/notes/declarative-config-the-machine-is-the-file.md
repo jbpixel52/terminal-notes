@@ -5,8 +5,7 @@ pubDate: 2026-07-06
 tags: [linux, nixos, config, servers]
 minutes: 8
 ascii:
-  piece: nixos
-  caption: "the same machine, every time"
+  art: declarative-config-the-machine-is-the-file
 ---
 
 Most servers are a history: a base image, then a series of commands somebody

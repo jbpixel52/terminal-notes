@@ -5,8 +5,7 @@ pubDate: 2026-09-04
 tags: [linux, storage, servers, debugging]
 minutes: 8
 ascii:
-  piece: vinyl
-  caption: "spinning up, one platter at a time"
+  art: drives-that-are-not-there
 ---
 
 A mini-PC with four SATA drives, freshly installed, and storage that did not

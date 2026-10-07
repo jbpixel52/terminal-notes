@@ -5,8 +5,7 @@ pubDate: 2026-08-14
 tags: [linux, storage, monitoring, debugging]
 minutes: 7
 ascii:
-  piece: tesseract
-  caption: "a shape that looks solid until you check it"
+  art: a-mount-check-that-stayed-quiet
 ---
 
 Monitoring is the one part of a system whose bugs are invisible by default: a

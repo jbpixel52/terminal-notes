@@ -4,7 +4,9 @@ import Ascii from '../components/Ascii.astro';
 import { getNotes } from '../lib/site';
 
 const notes = await getNotes();
-const pieces = [...new Set(notes.map((n) => n.data.ascii.piece))];
+const pictures = notes.map((n) => n.data.ascii.art ?? n.data.ascii.piece);
+const pieces = new Set(pictures);
+const generated = notes.filter((n) => n.data.ascii.art).length;
 const tags = new Set(notes.flatMap((n) => n.data.tags));
 ---
 <BaseLayout title="Colophon" description="How this site is built, and how the privacy gate works.">
@@ -25,13 +27,34 @@ const tags = new Set(notes.flatMap((n) => n.data.tags));
 
     <h2>The art</h2>
     <p>
-      Every piece comes from <a href="https://ascii.rest/" rel="noopener noreferrer">ascii.rest</a>
+      Each note carries a picture: a photograph decoded onto a character grid, produced by
+      <code>tools/make-art.py</code>. That script searches
+      <a href="https://wallhaven.cc/" rel="noopener noreferrer">wallhaven</a> for one image
+      per note, centre-crops it to the grid's aspect, downsamples it to
+      <b>132 × 37 cells</b>, maps each cell's luminance through a 70-character density ramp
+      for the glyphs, and median-cuts the colours down to a 64-entry palette that travels
+      with the module. The frames are not stored: the finished picture is the data, and a
+      deterministic hash decides which cells have decoded yet, so the piece plays a short
+      decode reveal and then holds.
+    </p>
+    <p>
+      {generated} of the {pieces.size} pictures are generated that way; the rest are
+      schematic pieces from <a href="https://ascii.rest/" rel="noopener noreferrer">ascii.rest</a>
       by <a href="https://github.com/bas3line" rel="noopener noreferrer">@bas3line</a> (MIT),
-      imported as <code>ascii.rest/astro</code>. It renders the first frame on the server —
-      so the page is whole before any script runs — and starts animating once mounted.
-      Pieces only play while they intersect the viewport, and they hold their first frame
-      for readers who ask for reduced motion. All {pieces.length} pieces used here are
-      on the <a href="/art/">art page</a>.
+      which is also what animates a generated piece on a canvas — it handles the device
+      pixel ratio, the colour fills and the resize. Nothing plays off screen.
+    </p>
+    <p>
+      Three readers, three experiences, all from one module: with JavaScript off the finished
+      picture is already in the HTML as plain text; with reduced motion asked for, that same
+      still is what you keep and the piece is never mounted; everyone else gets the colour
+      decode on a canvas. The <a href="/art/">art page</a> has all {pieces.size} of them.
+    </p>
+    <p>
+      The photographs are other people's work, found through a search API. Republishing a
+      derivative of someone's image needs thought, so each caption links the source and the
+      generator records the image id, URL and query in the module header and in
+      <code>src/art/sources.js</code>. Check the terms of anything you intend to publish.
     </p>
 
     <h2>The privacy gate</h2>

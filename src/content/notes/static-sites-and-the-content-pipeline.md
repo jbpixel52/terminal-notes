@@ -5,8 +5,7 @@ pubDate: 2026-06-08
 tags: [astro, web, tooling]
 minutes: 7
 ascii:
-  piece: rocket
-  caption: "build, ship, nothing running"
+  art: static-sites-and-the-content-pipeline
 ---
 
 The site you are reading is a directory of Markdown files and a build step.

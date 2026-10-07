@@ -5,8 +5,7 @@ pubDate: 2026-08-10
 tags: [linux, servers, debugging, ssh]
 minutes: 8
 ascii:
-  piece: terminal
-  caption: "all you have is a prompt"
+  art: triage-on-a-host-you-cannot-see
 ---
 
 A remote host gives you a shell and no keyboard. Every diagnostic has to be

@@ -5,8 +5,7 @@ pubDate: 2026-10-05
 tags: [privacy, process, writing]
 minutes: 7
 ascii:
-  piece: scramble
-  caption: "the same facts, with the identifying bits scrambled"
+  art: anonymising-real-work
 ---
 
 I keep notes about work. Publishing them means making sure that nothing in

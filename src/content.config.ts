@@ -13,9 +13,13 @@ const notes = defineCollection({
     pubDate: z.coerce.date(),
     updatedDate: z.coerce.date().optional(),
     tags: z.array(z.string()).default([]),
-    /** The ascii art shown at the top of the note. */
+    /** The ascii art shown at the top of the note: one generated piece or one
+     *  catalogue piece, never both. */
     ascii: z.object({
-      piece: z.string(),
+      /** slug of a generated piece in src/art/pieces/ */
+      art: z.string().optional(),
+      /** name of a catalogue piece from ascii.rest */
+      piece: z.string().optional(),
       caption: z.string().optional(),
       mono: z.boolean().optional(),
       fps: z.number().optional(),
@@ -24,6 +28,10 @@ const notes = defineCollection({
     /** Estimated minutes; shown in the list. */
     minutes: z.number().optional(),
     draft: z.boolean().default(false),
+  })
+  .refine((n) => Boolean(n.ascii.art) !== Boolean(n.ascii.piece), {
+    message: 'set exactly one of ascii.art / ascii.piece',
+    path: ['ascii'],
   }),
 });
 
