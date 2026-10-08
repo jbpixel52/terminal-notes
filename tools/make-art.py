@@ -22,6 +22,13 @@ Usage:
     python tools/make-art.py --only docker-has-two-stores
     python tools/make-art.py --only x --print   # print the ascii, write nothing
 
+Queries are fragile: wallhaven's search is an AND over a narrow tag vocabulary,
+so multi-word queries often return nothing ("railway switchyard", "pressure
+gauge") and a few ordinary words are simply untagged ("printing", "abacus").
+Each query is therefore tried as written, then as its individual words
+longest-first, each with and without the ratio/size filters — which recovered
+10 of the 11 failures the first full run produced, measured.
+
 Sources: wallhaven.cc (public API, SFW only). Each generated module records the
 source image id and URL in a header comment, and the .art-src/ sidecar keeps the
 full metadata. Check the licence of anything you actually publish: wallhaven
@@ -35,6 +42,7 @@ import hashlib
 import io
 import json
 import pathlib
+import re
 import sys
 import time
 import urllib.parse
@@ -68,7 +76,9 @@ TOPICS: dict[str, tuple[str, list[str]]] = {
     "declarative-config-the-machine-is-the-file": ("blueprint schematic", ["technical drawing", "engineer blueprint"]),
     "the-conflict-you-cannot-see": ("labyrinth maze", ["hedge maze", "stone maze"]),
     "offline-first-sync-and-the-queue-that-survives-a-crash": ("desert dunes road", ["sand dunes", "desert highway"]),
-    "static-sites-and-the-content-pipeline": ("letterpress printing", ["printing press", "typewriter keys"]),
+    # "letterpress" and "printing" are dead tags on wallhaven (total: 0), so this
+    # one leads with a word that exists
+    "static-sites-and-the-content-pipeline": ("typewriter keys", ["typewriter", "manuscript"]),
     "the-terminal-as-a-design-language": ("neon matrix rain", ["cyberpunk neon rain", "digital rain"]),
     "delegating-work-to-parallel-agents": ("starling murmuration", ["flock of birds", "birds swarm"]),
     "measure-the-part-not-the-datasheet": ("caliper", ["micrometer", "measuring tools", "ruler metal"]),
@@ -141,11 +151,37 @@ def to_grid(img: Image.Image, cols: int, rows: int) -> Image.Image:
     return img.resize((cols, rows), Image.LANCZOS)
 
 
+def candidate_queries(query: str) -> list[str]:
+    """The query itself, then its words longest-first.
+
+    wallhaven's search is an AND over tags with a narrow vocabulary, so a
+    two- or three-word query is the fragile shape: "railway switchyard" and
+    "pressure gauge" return nothing at all, while their individual words are
+    well populated. Trying the longest word first keeps the result as specific
+    as the vocabulary allows without hand-tuning every entry in TOPICS.
+    """
+    words = [w for w in re.split(r"\s+", query.strip()) if len(w) > 3]
+    words.sort(key=len, reverse=True)
+    out = [query]
+    for w in words:
+        if w.lower() not in {o.lower() for o in out}:
+            out.append(w)
+    return out
+
+
+def find_image(query: str) -> tuple[dict, str]:
+    """First hit for the first candidate query that has any, with the query used."""
+    for candidate in candidate_queries(query):
+        for strict in (True, False):
+            hits = api_search(candidate, strict=strict)
+            if hits:
+                return hits[0], candidate
+    raise SystemExit(f"no wallhaven results for {query!r} (or any single word of it)")
+
+
 def build(slug: str, query: str, cols: int, rows: int, print_only: bool = False) -> dict:
-    hits = api_search(query, strict=True) or api_search(query, strict=False)
-    if not hits:
-        raise SystemExit(f"no wallhaven results for {query!r}")
-    pick = hits[0]
+    pick, used_query = find_image(query)
+    query = used_query
     raw = fetch(pick["path"], SRC_DIR / f"{pick['id']}{pathlib.Path(pick['path']).suffix}")
     img = Image.open(io.BytesIO(raw)).convert("RGB")
     grid = to_grid(img, cols, rows)
