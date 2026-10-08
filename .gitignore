@@ -20,6 +20,11 @@ node_modules/
 .verify/
 .verify-run.log
 
+# python bytecode: the art generator is imported by its own test, which writes
+# __pycache__ next to it
+__pycache__/
+*.pyc
+
 # logs
 npm-debug.log*
 yarn-debug.log*
