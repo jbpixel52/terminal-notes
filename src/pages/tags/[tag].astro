@@ -1,4 +1,5 @@
 ---
+import { url } from '../../lib/url';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import NoteItem from '../../components/NoteItem.astro';
 import { getNotes, tagIndex } from '../../lib/site';
@@ -19,5 +20,5 @@ const { tag, list } = Astro.props;
   <ul class="note-list">
     {list.map((note) => <NoteItem note={note} />)}
   </ul>
-  <p><a href="/tags/">← all tags</a></p>
+  <p><a href={url('/tags/')}>← all tags</a></p>
 </BaseLayout>

@@ -1,4 +1,5 @@
 ---
+import { url } from '../../lib/url';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { getNotes, tagIndex } from '../../lib/site';
 
@@ -13,7 +14,7 @@ const tags = tagIndex(notes);
       <li class="note-item">
         <time>{list.length} note{list.length === 1 ? '' : 's'}</time>
         <div>
-          <h3><a href={`/tags/${tag}/`}>#{tag}</a></h3>
+          <h3><a href={url(`/tags/${tag}/`)}>#{tag}</a></h3>
           <p class="desc">
             {list.slice(0, 4).map((n) => n.data.title).join(' · ')}
             {list.length > 4 ? ` … +${list.length - 4}` : ''}

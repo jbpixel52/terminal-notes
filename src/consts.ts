@@ -8,8 +8,10 @@ export const SITE = {
   description:
     'Field notes on Linux servers, Docker, networking, storage, web development, testing and automation. Every post is a lesson that cost something to learn.',
   author: 'an anonymous engineer',
-  /** Placeholder: set this to the real origin before deploying. */
-  url: 'https://notes.example.com',
+  /** The deployed origin. Keep in step with `site` in astro.config.mjs. */
+  url: process.env.SITE_URL ?? 'https://jbpixel52.github.io',
+  /** The path the site is served from, when it is not the origin root. */
+  base: process.env.BASE_PATH ?? '/terminal-notes',
   lang: 'en',
   /** Shown in the footer. No personal links. */
   builtWith: 'Astro',
@@ -17,8 +19,8 @@ export const SITE = {
 
 export const NAV = [
   { href: '/', label: 'index' },
-  { href: '/notes', label: 'notes' },
-  { href: '/tags', label: 'tags' },
-  { href: '/about', label: 'about' },
-  { href: '/colophon', label: 'colophon' },
+  { href: '/notes/', label: 'notes' },
+  { href: '/tags/', label: 'tags' },
+  { href: '/about/', label: 'about' },
+  { href: '/colophon/', label: 'colophon' },
 ] as const;

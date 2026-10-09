@@ -1,4 +1,5 @@
 ---
+import { url } from '../lib/url';
 import { SITE } from '../consts';
 
 interface Props { title: string; description: string; image?: string; }
@@ -17,8 +18,8 @@ const canonical = new URL(Astro.url.pathname, Astro.site ?? SITE.url);
 <meta property="og:description" content={description} />
 <meta property="og:url" content={canonical} />
 <meta name="twitter:card" content="summary" />
-<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-<link rel="alternate" type="application/rss+xml" title={SITE.title} href="/rss.xml" />
+<link rel="icon" href={url('/favicon.svg')} type="image/svg+xml" />
+<link rel="alternate" type="application/rss+xml" title={SITE.title} href={url('/rss.xml')} />
 <script is:inline>
   // Set the theme before first paint so there is no flash.
   (() => {

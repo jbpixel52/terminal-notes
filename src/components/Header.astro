@@ -1,15 +1,21 @@
 ---
+import { url } from '../lib/url';
 import { NAV, SITE } from '../consts';
-const path = Astro.url.pathname.replace(/\/$/, '') || '/';
-const isCurrent = (href: string) =>
-  href === '/' ? path === '/' : path === href || path.startsWith(href + '/');
+
+// Astro.url.pathname includes the deployment base, so compare without it
+const base = (import.meta.env.BASE_URL || '/').replace(/\/$/, '');
+const path = Astro.url.pathname.slice(base.length).replace(/\/$/, '') || '/';
+const isCurrent = (href: string) => {
+  const target = href.replace(/\/$/, '') || '/';
+  return target === '/' ? path === '/' : path === target || path.startsWith(target + '/');
+};
 ---
 <header class="site-header">
   <div class="wrap">
-    <a class="brand" href="/">{SITE.title}</a>
+    <a class="brand" href={url('/')}>{SITE.title}</a>
     <nav class="site-nav" aria-label="Primary">
       {NAV.map((item) => (
-        <a href={item.href} aria-current={isCurrent(item.href) ? 'page' : undefined}>
+        <a href={url(item.href)} aria-current={isCurrent(item.href) ? 'page' : undefined}>
           {item.label}
         </a>
       ))}

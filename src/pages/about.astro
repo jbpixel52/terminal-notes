@@ -1,4 +1,5 @@
 ---
+import { url } from '../lib/url';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Ascii from '../components/Ascii.astro';
 import { SITE } from '../consts';
@@ -34,7 +35,7 @@ import { SITE } from '../consts';
       the built output for the shapes of private data (emails, IPs, credentials,
       personal paths) and for a local, git-ignored list of terms, and fails the build
       if any of them appear. The gate is described in full on the
-      <a href="/colophon/">colophon</a>.
+      <a href={url('/colophon/')}>colophon</a>.
     </p>
 
     <h2>House style</h2>

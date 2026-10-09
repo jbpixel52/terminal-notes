@@ -1,0 +1,63 @@
+name: Deploy to GitHub Pages
+
+# Build from source on every push, run the privacy gate, then publish dist/ as
+# the Pages artifact. The built output is never committed: the pipeline is the
+# only thing that writes what is served.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# one deployment at a time; queue rather than cancel, so a push in flight is
+# never left half-published
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+
+      # `npm ci` installs the ascii.rest dependency straight from GitHub and
+      # builds it, so it needs the committed lockfile, not a loose install
+      - name: Install
+        run: npm ci
+
+      # the gate runs before the build and after it: a private name must not
+      # reach the published HTML through a template either
+      - name: Privacy gate (sources)
+        run: node scripts/check-anonymized.mjs
+
+      - name: Build
+        run: npm run build
+
+      - name: Privacy gate (built output)
+        run: node scripts/check-anonymized.mjs
+
+      - uses: actions/configure-pages@v6
+
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5

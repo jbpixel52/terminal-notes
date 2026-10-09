@@ -1,4 +1,5 @@
 ---
+import { url } from '../lib/url';
 import BaseLayout from './BaseLayout.astro';
 import Art from '../components/Art.astro';
 import Ascii from '../components/Ascii.astro';
@@ -29,7 +30,7 @@ const sections = headings.filter((h) => h.depth === 2);
         <p class="lede">{description}</p>
         {tags.length > 0 && (
           <ul class="tags">
-            {tags.map((tag) => <li><a class="tag" href={`/tags/${tag}/`}>{tag}</a></li>)}
+            {tags.map((tag) => <li><a class="tag" href={url(`/tags/${tag}/`)}>{tag}</a></li>)}
           </ul>
         )}
       </header>
@@ -73,7 +74,7 @@ const sections = headings.filter((h) => h.depth === 2);
               <dd>{minutes(note)} min</dd>
               <dt>tags</dt>
               <dd class="rail-tags">
-                {tags.map((tag) => <a class="tag" href={`/tags/${tag}/`}>{tag}</a>)}
+                {tags.map((tag) => <a class="tag" href={url(`/tags/${tag}/`)}>{tag}</a>)}
               </dd>
             </dl>
           </div>
@@ -81,9 +82,9 @@ const sections = headings.filter((h) => h.depth === 2);
           <nav class="rail-block">
             <h2 class="rail-title">nearby</h2>
             <ul class="rail-links">
-              {prev && <li><a href={`/notes/${prev.id}/`}>← {prev.data.title}</a></li>}
-              {next && <li><a href={`/notes/${next.id}/`}>{next.data.title} →</a></li>}
-              <li><a href="/notes/">all notes</a></li>
+              {prev && <li><a href={url(`/notes/${prev.id}/`)}>← {prev.data.title}</a></li>}
+              {next && <li><a href={url(`/notes/${next.id}/`)}>{next.data.title} →</a></li>}
+              <li><a href={url('/notes/')}>all notes</a></li>
             </ul>
           </nav>
         </aside>

@@ -1,4 +1,5 @@
 ---
+import { url } from '../../lib/url';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import NoteItem from '../../components/NoteItem.astro';
 import { getNotes, tagIndex } from '../../lib/site';
@@ -28,7 +29,7 @@ const tags = tagIndex(notes);
         <ul class="tag-cloud">
           {[...tags].map(([tag, list]) => (
             <li>
-              <a class="tag" href={`/tags/${tag}/`}>{tag}</a>{' '}
+              <a class="tag" href={url(`/tags/${tag}/`)}>{tag}</a>{' '}
               <span class="count">{list.length}</span>
             </li>
           ))}
@@ -37,9 +38,9 @@ const tags = tagIndex(notes);
       <nav class="rail-block" aria-label="Elsewhere">
         <h2 class="rail-title">elsewhere</h2>
         <ul class="rail-links">
-          <li><a href="/">the front page</a></li>
-          <li><a href="/art/">the art</a></li>
-          <li><a href="/tags/">all tags</a></li>
+          <li><a href={url('/')}>the front page</a></li>
+          <li><a href={url('/art/')}>the art</a></li>
+          <li><a href={url('/tags/')}>all tags</a></li>
         </ul>
       </nav>
     </aside>

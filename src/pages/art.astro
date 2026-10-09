@@ -1,4 +1,5 @@
 ---
+import { url } from '../lib/url';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Art from '../components/Art.astro';
 import Ascii from '../components/Ascii.astro';
@@ -73,9 +74,9 @@ const withSource = pictures.filter((p) => p.art && sources[p.art]).length;
       <nav class="rail-block" aria-label="Elsewhere">
         <h2 class="rail-title">elsewhere</h2>
         <ul class="rail-links">
-          <li><a href="/">the front page</a></li>
-          <li><a href="/notes/">every note</a></li>
-          <li><a href="/colophon/">how it is built</a></li>
+          <li><a href={url('/')}>the front page</a></li>
+          <li><a href={url('/notes/')}>every note</a></li>
+          <li><a href={url('/colophon/')}>how it is built</a></li>
         </ul>
       </nav>
     </aside>

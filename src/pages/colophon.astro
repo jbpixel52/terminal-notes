@@ -1,4 +1,5 @@
 ---
+import { url } from '../lib/url';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Ascii from '../components/Ascii.astro';
 import { getNotes } from '../lib/site';
@@ -48,7 +49,7 @@ const tags = new Set(notes.flatMap((n) => n.data.tags));
       Three readers, three experiences, all from one module: with JavaScript off the finished
       picture is already in the HTML as plain text; with reduced motion asked for, that same
       still is what you keep and the piece is never mounted; everyone else gets the colour
-      decode on a canvas. The <a href="/art/">art page</a> has all {pieces.size} of them.
+      decode on a canvas. The <a href={url('/art/')}>art page</a> has all {pieces.size} of them.
     </p>
     <p>
       The photographs are other people's work, found through a search API. Republishing a

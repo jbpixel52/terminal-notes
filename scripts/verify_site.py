@@ -33,8 +33,80 @@ from pathlib import Path
 
 from playwright.sync_api import sync_playwright
 
+import functools
+import http.server
+import re
+import shutil
+import threading
+
 OK: list[str] = []
 BAD: list[str] = []
+
+
+def serve(root: Path, port: int = 0) -> tuple[str, http.server.ThreadingHTTPServer]:
+    """Serve `root` on a free port in the background, and return its base URL.
+
+    In-process on purpose: the harness used to depend on someone else having
+    started a preview server, and a zombie listener on the right port made every
+    check fail for the wrong reason.
+    """
+    handler = functools.partial(http.server.SimpleHTTPRequestHandler, directory=str(root))
+    # silence the per-request logging; the harness prints its own results
+    handler.log_message = lambda *a, **k: None  # type: ignore[method-assign]
+    httpd = http.server.ThreadingHTTPServer(("127.0.0.1", port), handler)
+    thread = threading.Thread(target=httpd.serve_forever, daemon=True)
+    thread.start()
+    return f"http://127.0.0.1:{httpd.server_address[1]}", httpd
+
+
+INTERNAL_LINK = re.compile(r'(?:href|src)="([^"]+)"')
+SKIP_SCHEMES = ("http://", "https://", "mailto:", "data:", "#", "//")
+
+
+def check_internal_links(dist: Path, base: str) -> tuple[int, list[str]]:
+    """Every internal link and asset must resolve to a file in dist.
+
+    Two properties, because the second is the one a file-existence check misses:
+
+      * the target must be reachable *on the host*, which for a deployment
+        under a base path means it must carry that prefix — an unprefixed
+        `/about` resolves at the origin root and 404s, even though
+        `dist/about/index.html` exists;
+      * and it must correspond to something that was actually built.
+
+    A route-based harness cannot do this at all: it enumerates what was built,
+    so a link to something that was never built — a feed endpoint that does not
+    exist, a renamed page — is invisible to it. Here the links are the input and
+    the files are the expectation.
+    """
+    prefix = base.rstrip("/")
+    checked = 0
+    missing: list[str] = []
+    for html in sorted(dist.rglob("*.html")):
+        text = html.read_text(encoding="utf-8", errors="ignore")
+        for match in INTERNAL_LINK.finditer(text):
+            target = match.group(1)
+            if target.startswith(SKIP_SCHEMES) or not target.startswith("/"):
+                continue
+            checked += 1
+            if prefix and not target.startswith(prefix):
+                missing.append(
+                    f"{html.relative_to(dist).as_posix()}: {target} (missing the '{prefix}' base)"
+                )
+                continue
+            rel = target[len(prefix):] if prefix else target
+            rel = rel.split("#")[0].split("?")[0]
+            if not rel or rel == "/":
+                rel = "/index.html"
+            candidate = dist / rel.lstrip("/")
+            found = (
+                candidate.is_file()
+                or (candidate / "index.html").is_file()
+                or candidate.with_suffix(".html").is_file()
+            )
+            if not found:
+                missing.append(f"{html.relative_to(dist).as_posix()}: {target} (not built)")
+    return checked, missing
 
 
 def check(condition: bool, name: str, detail: str = "") -> bool:
@@ -92,7 +164,17 @@ ASCII_RENDERED = """
 
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--base-url", default="http://127.0.0.1:4321")
+    ap.add_argument(
+        "--base-url",
+        default=None,
+        help="test an already-running server instead of starting one in-process",
+    )
+    ap.add_argument(
+        "--base-path",
+        default="/terminal-notes",
+        help="the path the site is served from; dist/ is mounted under it, as "
+        "GitHub Pages does for a project repo ('' for a domain root)",
+    )
     ap.add_argument("--dist", default="dist")
     ap.add_argument("--out", default=".verify")
     args = ap.parse_args()
@@ -105,8 +187,29 @@ def main() -> int:
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
 
-    if not wait_for_server(args.base_url + "/"):
-        print(f"FAIL nothing answering at {args.base_url} — is the preview server up?")
+    base = args.base_path.rstrip("/")
+    if args.base_url:
+        base_url = args.base_url.rstrip("/") + base + "/"
+        httpd = None
+    else:
+        # mount dist/ under the base path, so the links in the pages resolve
+        # here exactly as they will on the host
+        mount = out / "mount"
+        if mount.exists():
+            shutil.rmtree(mount)
+        if base:
+            (mount / base.lstrip("/")).parent.mkdir(parents=True, exist_ok=True)
+            shutil.copytree(dist, mount / base.lstrip("/"))
+        else:
+            shutil.copytree(dist, mount)
+        base_url, httpd = serve(mount)
+        base_url = base_url + base + "/"
+    print(f"serving {args.dist}/ at {base_url}")
+    # the rest of the harness appends routes to this, so it must not end in '/'
+    args.base_url = base_url.rstrip("/")
+
+    if not wait_for_server(base_url):
+        print(f"FAIL nothing answering at {base_url}")
         return 1
 
     routes = routes_from_dist(dist)
@@ -337,6 +440,15 @@ def main() -> int:
         browser.close()
 
     # --- counts must agree with the build -------------------------------
+    # links are the input here, files are the expectation: the one check that
+    # sees a link to something that was never built
+    links_checked, missing_links = check_internal_links(dist, args.base_path)
+    check(
+        not missing_links,
+        f"every internal link and asset resolves ({links_checked} checked)",
+        "; ".join(missing_links[:5]),
+    )
+
     # every picture must be in the HTML itself, for readers without JavaScript
     missing_still = []
     for html in sorted(dist.rglob("*.html")):

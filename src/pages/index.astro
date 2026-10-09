@@ -1,4 +1,5 @@
 ---
+import { url } from '../lib/url';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import NoteItem from '../components/NoteItem.astro';
 import Ascii from '../components/Ascii.astro';
@@ -32,7 +33,7 @@ const pictures_ = new Set(pictures).size;
       <ul class="note-list">
         {recent.map((note) => <NoteItem note={note} />)}
       </ul>
-      <p><a href="/notes/">all {notes.length} notes →</a></p>
+      <p><a href={url('/notes/')}>all {notes.length} notes →</a></p>
     </div>
 
     <aside class="page-rail" aria-label="Notebook index">
@@ -51,7 +52,7 @@ const pictures_ = new Set(pictures).size;
         <ul class="tag-cloud">
           {[...tags].map(([tag, list]) => (
             <li>
-              <a class="tag" href={`/tags/${tag}/`}>{tag}</a>{' '}
+              <a class="tag" href={url(`/tags/${tag}/`)}>{tag}</a>{' '}
               <span class="count">{list.length}</span>
             </li>
           ))}
@@ -61,10 +62,10 @@ const pictures_ = new Set(pictures).size;
       <nav class="rail-block" aria-label="Elsewhere">
         <h2 class="rail-title">elsewhere</h2>
         <ul class="rail-links">
-          <li><a href="/notes/">every note</a></li>
-          <li><a href="/art/">the art</a></li>
-          <li><a href="/about/">about</a></li>
-          <li><a href="/colophon/">colophon</a></li>
+          <li><a href={url('/notes/')}>every note</a></li>
+          <li><a href={url('/art/')}>the art</a></li>
+          <li><a href={url('/about/')}>about</a></li>
+          <li><a href={url('/colophon/')}>colophon</a></li>
         </ul>
       </nav>
     </aside>

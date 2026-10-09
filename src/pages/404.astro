@@ -1,4 +1,5 @@
 ---
+import { url } from '../lib/url';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Ascii from '../components/Ascii.astro';
 import { getNotes } from '../lib/site';
@@ -15,8 +16,8 @@ const suggestions = notes.slice(0, 3);
   </p>
   <h2 class="no-hash">try instead</h2>
   <ul>
-    <li><a href="/notes/">all notes</a></li>
-    <li><a href="/tags/">tags</a></li>
-    {suggestions.map((n) => <li><a href={`/notes/${n.id}/`}>{n.data.title}</a></li>)}
+    <li><a href={url('/notes/')}>all notes</a></li>
+    <li><a href={url('/tags/')}>tags</a></li>
+    {suggestions.map((n) => <li><a href={url(`/notes/${n.id}/`)}>{n.data.title}</a></li>)}
   </ul>
 </BaseLayout>

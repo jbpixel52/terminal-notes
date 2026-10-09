@@ -1,4 +1,5 @@
 ---
+import { url } from '../lib/url';
 import type { Note } from '../lib/site';
 import { formatDate, minutes } from '../lib/site';
 
@@ -9,13 +10,13 @@ const { title, description, pubDate, tags, ascii } = note.data;
 <li class="note-item">
   <time datetime={pubDate.toISOString()}>{formatDate(pubDate)}</time>
   <div>
-    <h3><a href={`/notes/${note.id}/`}>{title}</a></h3>
+    <h3><a href={url(`/notes/${note.id}/`)}>{title}</a></h3>
     <p class="desc">{description}</p>
     <div class="meta">
       <span>{minutes(note)} min</span>
       {tags.length > 0 && (
         <span class="tags">
-          {tags.map((tag) => <a class="tag" href={`/tags/${tag}/`}>{tag}</a>)}
+          {tags.map((tag) => <a class="tag" href={url(`/tags/${tag}/`)}>{tag}</a>)}
         </span>
       )}
     </div>

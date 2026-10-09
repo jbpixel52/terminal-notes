@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://notes.example.com/sitemap-index.xml
+Sitemap: https://jbpixel52.github.io/terminal-notes/sitemap-index.xml
