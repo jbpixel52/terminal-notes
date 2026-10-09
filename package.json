@@ -8,10 +8,10 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "check": "astro check",
     "anon": "node scripts/check-anonymized.mjs",
-    "verify": "node scripts/verify-site.mjs",
-    "ready": "npm run anon && npm run build"
+    "verify": "python scripts/verify_site.py",
+    "deployed": "python scripts/check_deployed.py",
+    "ready": "npm run anon && npm run build && npm run anon && npm run verify"
   },
   "dependencies": {
     "@astrojs/rss": "^4.0.19",
