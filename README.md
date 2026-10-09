@@ -34,20 +34,44 @@ slug. Source photographs (and a JSON sidecar of ids and URLs) are cached in
 `.art-src/`, which is git-ignored — only the generated modules in
 `src/art/pieces/` are published.
 
+## Deployment
+
+Live at **<https://jbpixel52.github.io/terminal-notes/>** — GitHub Pages, built
+by `.github/workflows/deploy.yml` on every push to `main`. The workflow installs
+from the lockfile, runs the privacy gate, builds, runs the gate again over the
+built output, and publishes `dist/` as the Pages artifact. The built output is
+never committed: the pipeline is the only thing that writes what is served.
+
+Two environment variables say where the site thinks it lives:
+
+```bash
+BASE_PATH='/terminal-notes' SITE_URL='https://jbpixel52.github.io'   # the defaults
+BASE_PATH='' SITE_URL='https://notes.example.com'                    # a domain root
+```
+
+Every internal link goes through `url()` in `src/lib/url.ts`, which prefixes the
+base, so the same commit deploys to a project path or to a domain root. The
+thing to watch is the **navigation**: its hrefs come from `NAV` in
+`src/consts.ts` rather than from a literal `href="/…"`, so a search-and-replace
+over the templates will miss them. It did.
+
 ## Check it
 
 ```bash
-npm run anon       # the privacy gate (see ANONYMIZATION.md)
+npm run anon        # the privacy gate (see ANONYMIZATION.md)
 npm run build
-npm run verify     # every route in a real browser, screenshots to .verify/
+npm run verify      # every route in a real browser, screenshots to .verify/
+npm run deployed    # the live site: sitemap, content, feed, robots
 ```
 
-`npm run verify` needs Playwright. On this machine the interpreter that has it
-is a virtualenv:
+`verify` needs Playwright; it starts its own server, mounting `dist/` under
+`--base-path` so the links resolve here as they do on the host. Use
+`python scripts/verify_site.py --base-path ''` for a domain-root build.
 
-```bash
-"$HOME/.venvs/shots/Scripts/python.exe" scripts/verify_site.py
-```
+`deployed` reads the live sitemap and requests every URL in it, then asserts
+content rather than status: the home page's title and stylesheet, a note page's
+no-JS picture and its source credit, the feed parsing with items whose links
+carry the base, and robots.txt advertising the sitemap. A 200 is not a page.
 
 ## Writing a note
 
