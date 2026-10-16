@@ -97,6 +97,15 @@ TOPICS: dict[str, tuple[str, list[str]]] = {
     "testing-on-an-emulator": ("arcade machine", ["retro arcade", "game console vintage"]),
     "the-one-page-report-that-spilled": ("stack of paper", ["paper sheets stack", "typewriter paper"]),
     "payments-that-authorise-before-they-charge": ("banknotes coins", ["credit card macro", "vintage cash register"]),
+    # third wave: the notes written after the site's first deploy
+    "driving-a-desktop-in-the-background": ("shadow puppets", ["marionette", "puppet", "shadow play"]),
+    "a-theme-that-does-not-flash": ("lightning storm", ["lightning", "storm clouds"]),
+    "the-steps-only-a-human-can-do": ("stone path forest", ["forest trail", "stepping stones"]),
+    "a-version-jump-that-deletes-the-mappings": ("snake skin", ["snake", "chameleon"]),
+    "a-stack-that-is-up-is-not-working": ("scaffolding", ["construction crane", "building site"]),
+    "changing-a-schema-with-data-already-in-it": ("rock strata", ["sedimentary rock", "canyon layers"]),
+    "a-parity-array-of-mismatched-disks": ("stone wall", ["dry stone wall", "brick wall"]),
+    "a-process-keeps-the-environment-it-started-with": ("telephone exchange", ["vintage telephone", "switchboard"]),
 }
 
 
