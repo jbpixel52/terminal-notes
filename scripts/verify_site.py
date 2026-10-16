@@ -264,8 +264,16 @@ def main() -> int:
                 for i in range(n):
                     el = art.nth(i)
                     el.scroll_into_view_if_needed()
-                    page.wait_for_timeout(650)  # the runtime mounts on intersection
-                    rendered = el.evaluate(ASCII_RENDERED)
+                    # The runtime mounts on intersection (hence the wait), and
+                    # some catalogue pieces animate their content in — the
+                    # typewriter opens on a cursor and types, so it is nearly
+                    # empty for the first second. Sample once and this check
+                    # reports a working page as broken; poll instead.
+                    rendered = None
+                    deadline = time.time() + 5.0
+                    while rendered is None and time.time() < deadline:
+                        page.wait_for_timeout(400)
+                        rendered = el.evaluate(ASCII_RENDERED)
                     piece = el.get_attribute("piece")
                     check(
                         rendered is not None,

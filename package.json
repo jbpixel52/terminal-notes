@@ -9,8 +9,8 @@
     "build": "astro build",
     "preview": "astro preview",
     "anon": "node scripts/check-anonymized.mjs",
-    "verify": "python scripts/verify_site.py",
-    "deployed": "python scripts/check_deployed.py",
+    "verify": "python3 scripts/verify_site.py",
+    "deployed": "python3 scripts/check_deployed.py",
     "ready": "npm run anon && npm run build && npm run anon && npm run verify"
   },
   "dependencies": {
