@@ -70,6 +70,27 @@ const tags = new Set(notes.flatMap((n) => n.data.tags));
       who has asked for reduced motion.
     </p>
 
+    <h2>The palette and the title</h2>
+    <p>
+      The colours are four primaries — red, yellow and blue, which nothing else can be
+      mixed from, plus a green for the one place a "fine" signal is needed — carried at
+      full strength over a near-black ground. They are spent on marks rather than
+      surfaces: one gradient reused by the wordmark, a stripe along the top of the
+      header, a short rule under section headings, and a rotation of the three hues
+      across the hash marks in a tag cloud and the dates in a list. Nothing decorative
+      on this site is a colour that is not one of those four.
+    </p>
+    <p>
+      The front page leads with a wordmark instead of a picture: <b>Terminal Notes</b>,
+      set in a heavy display face, filled with that gradient and animated so the colour
+      sweeps slowly through the letters while a blurred halo of the same primaries
+      breathes behind them. It is three CSS keyframes and two pseudo-elements — no
+      script, no image, no font beyond what the reader's machine already has — and it
+      degrades in two directions on purpose: a browser without gradient text gets plain
+      ink, and a reader who has asked for reduced motion gets the title, the colour and
+      the glow, held still.
+    </p>
+
     <h2>The privacy gate</h2>
     <p>
       <code>scripts/check-anonymized.mjs</code> walks the sources, the public assets and

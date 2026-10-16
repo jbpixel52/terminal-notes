@@ -1,5 +1,11 @@
 /* =========================================================================
-   Terminal Notes — minimal, text-first, one accent.
+   Terminal Notes — bold, primary-coloured, still text-first.
+
+   The palette is four primaries (red, yellow, blue, green) carried over a
+   near-black ground, and they are spent deliberately: a gradient title, a
+   stripe on the header, a rule under section headings, and rotating marks on
+   tags and dates. Structure still comes from hairlines and one typewriter
+   face; the colour is what is new.
 
    The background is a grain gradient in the spirit of Paper's shader of that
    name (shaders.paper.design/grain-gradient): a flat ground, a few soft radial
@@ -12,28 +18,52 @@
 :root {
   color-scheme: dark;
 
-  --bg: #0a0b0d;
-  --bg-soft: #101215;
-  --panel: #121418;
-  --line: #1e2126;
-  --line-soft: #171a1e;
-  --fg: #d6d9dd;
-  --fg-dim: #8b9099;
-  --fg-faint: #5e636b;
-  --accent: #7ee787;
-  --accent-dim: #3f6b47;
-  --warn: #e5b567;
-  --link: #a8cfe8;
+  --bg: #07080b;
+  --bg-soft: #101319;
+  --panel: #12161d;
+  --line: #242a35;
+  --line-soft: #1a1f28;
+  --fg: #e7eaf0;
+  --fg-dim: #99a2b0;
+  --fg-faint: #68707e;
+
+  /* The primaries. Three colours nothing else can be mixed from, plus a green
+     for the one place a "fine" signal is needed. Everything decorative on this
+     site is one of these four. */
+  --red: #ff3b47;
+  --yellow: #ffd23f;
+  --blue: #4d8dff;
+  --green: #35d67a;
+
+  --accent: var(--yellow);
+  --accent-dim: #7d6a24;
+  --warn: var(--yellow);
+  --link: var(--blue);
+  /* the ink that reads on top of --accent (a chip, a hover fill) */
+  --on-accent: #07080b;
+
+  /* one gradient, reused by the title, the rules and the chips, so the palette
+     cannot drift between them */
+  --grad: linear-gradient(
+    100deg,
+    var(--red),
+    var(--yellow) 34%,
+    var(--blue) 68%,
+    var(--red)
+  );
 
   /* the gradient's colours, carried as low-alpha washes */
-  --wash-1: rgba(126, 231, 135, 0.055);
-  --wash-2: rgba(88, 166, 255, 0.05);
-  --wash-3: rgba(163, 113, 247, 0.045);
-  --wash-4: rgba(255, 184, 107, 0.03);
+  --wash-1: rgba(255, 59, 71, 0.07);
+  --wash-2: rgba(77, 141, 255, 0.075);
+  --wash-3: rgba(255, 210, 63, 0.05);
+  --wash-4: rgba(53, 214, 122, 0.045);
   --grain: 0.05;
 
   --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
     "Liberation Mono", "DejaVu Sans Mono", "ascii.rest mono", monospace;
+  /* the display face: bold, geometric, and already on the machine */
+  --display: "Inter Tight", Inter, system-ui, -apple-system, "Segoe UI",
+    Roboto, "Helvetica Neue", Arial, sans-serif;
 
   --measure: 74ch;
   --wide: 96rem;
@@ -42,23 +72,31 @@
 
 :root[data-theme='light'] {
   color-scheme: light;
-  --bg: #fbfbf9;
-  --bg-soft: #f5f5f1;
-  --panel: #f7f7f4;
-  --line: #e2e2dc;
-  --line-soft: #ebeae5;
-  --fg: #1b1d20;
-  --fg-dim: #5a5f68;
-  --fg-faint: #8d9199;
-  --accent: #2c6e3f;
-  --accent-dim: #7ba887;
-  --warn: #8a5a00;
-  --link: #1d5b96;
+  --bg: #fdfcf7;
+  --bg-soft: #f4f1e9;
+  --panel: #f8f6f0;
+  --line: #e2ddd0;
+  --line-soft: #ece8dd;
+  --fg: #14161a;
+  --fg-dim: #565d68;
+  --fg-faint: #8b9199;
 
-  --wash-1: rgba(44, 110, 63, 0.05);
-  --wash-2: rgba(29, 91, 150, 0.045);
-  --wash-3: rgba(126, 87, 194, 0.035);
-  --wash-4: rgba(138, 90, 0, 0.025);
+  /* the same four hues, darkened until they clear contrast on paper */
+  --red: #d81f2d;
+  --yellow: #b06a00;
+  --blue: #0b57d0;
+  --green: #0f7a45;
+
+  --accent: var(--red);
+  --accent-dim: #e3a2a2;
+  --warn: #8a5a00;
+  --link: var(--blue);
+  --on-accent: #fdfcf7;
+
+  --wash-1: rgba(216, 31, 45, 0.055);
+  --wash-2: rgba(11, 87, 208, 0.05);
+  --wash-3: rgba(176, 106, 0, 0.045);
+  --wash-4: rgba(15, 122, 69, 0.04);
   --grain: 0.07;
 }
 
@@ -130,21 +168,37 @@ body::after {
 }
 
 a { color: var(--link); text-decoration: none; text-underline-offset: 3px; }
-a:hover { text-decoration: underline; }
+a:hover { text-decoration: underline; text-decoration-color: var(--yellow); text-decoration-thickness: 2px; }
 
 /* --- type ---------------------------------------------------------------- */
 
 h1, h2, h3, h4 {
-  line-height: 1.3;
-  font-weight: 600;
-  letter-spacing: -0.005em;
-  margin: 2.4em 0 0.7em;
+  font-family: var(--display);
+  line-height: 1.22;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  margin: 2.2em 0 0.7em;
   color: var(--fg);
 }
-h1 { font-size: 1.5rem; margin-top: 0; letter-spacing: -0.02em; }
-h2 { font-size: 1.1rem; }
-h3 { font-size: 0.98rem; }
-h4 { font-size: 0.92rem; color: var(--fg-dim); }
+h1 { font-size: 1.85rem; margin-top: 0; letter-spacing: -0.035em; }
+h2 { font-size: 1.3rem; }
+h3 { font-size: 1.05rem; }
+h4 { font-size: 0.95rem; color: var(--fg-dim); }
+
+/* a short primary rule under a section title, on the pages that have room */
+h2.no-hash { position: relative; padding-bottom: 0.5rem; }
+h2.no-hash::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 2.6rem;
+  height: 3px;
+  border-radius: 999px;
+  background: var(--grad);
+  background-size: 300% 100%;
+  animation: hero-sweep 14s linear infinite;
+}
 
 p, ul, ol, blockquote, table, pre { margin: 0 0 1.2em; }
 ul, ol { padding-left: 1.3em; }
@@ -158,7 +212,7 @@ hr {
 }
 
 blockquote {
-  border-left: 1px solid var(--line);
+  border-left: 3px solid var(--blue);
   padding: 0.1em 0 0.1em 1.1em;
   color: var(--fg-dim);
 }
@@ -167,7 +221,7 @@ code {
   font-family: var(--mono);
   font-size: 0.9em;
   color: var(--fg);
-  background: color-mix(in srgb, var(--panel) 60%, transparent);
+  background: color-mix(in srgb, var(--blue) 14%, transparent);
   border-radius: 3px;
   padding: 0.08em 0.32em;
 }
@@ -206,7 +260,7 @@ th, td {
   text-align: left;
   vertical-align: top;
 }
-th { color: var(--fg-dim); font-weight: 600; border-bottom-color: var(--accent-dim); }
+th { color: var(--fg-dim); font-weight: 700; border-bottom-color: var(--accent-dim); }
 
 kbd {
   border: 1px solid var(--line);
@@ -216,7 +270,7 @@ kbd {
   background: var(--panel);
 }
 
-::selection { background: color-mix(in srgb, var(--accent) 30%, transparent); }
+::selection { background: color-mix(in srgb, var(--yellow) 38%, transparent); }
 
 /* --- layout ------------------------------------------------------------- */
 
@@ -259,17 +313,18 @@ main { padding: 3rem 0 6rem; }
 
 .rail-block { margin-bottom: 2rem; }
 .rail-title {
-  font-size: 0.68rem;
-  font-weight: 600;
-  letter-spacing: 0.1em;
+  font-family: var(--display);
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--fg-faint);
+  color: var(--blue);
   margin: 0 0 0.7rem;
 }
 .rail-toc { list-style: none; margin: 0; padding: 0; }
 .rail-toc li { margin-bottom: 0.35rem; line-height: 1.5; }
 .rail-toc a { color: var(--fg-dim); display: block; }
-.rail-toc a:hover { color: var(--fg); text-decoration: none; }
+.rail-toc a:hover { color: var(--yellow); text-decoration: none; }
 .rail-meta {
   margin: 0;
   display: grid;
@@ -282,7 +337,7 @@ main { padding: 3rem 0 6rem; }
 .rail-links { list-style: none; margin: 0; padding: 0; }
 .rail-links li { margin-bottom: 0.45rem; }
 .rail-links a { color: var(--fg-dim); }
-.rail-links a:hover { color: var(--fg); }
+.rail-links a:hover { color: var(--yellow); }
 
 @media (max-width: 68rem) {
   .note-grid,
@@ -309,6 +364,16 @@ main { padding: 3rem 0 6rem; }
   backdrop-filter: blur(10px);
   background: color-mix(in srgb, var(--bg) 70%, transparent);
 }
+/* the primary stripe: the one piece of colour that is on every page */
+.site-header::after {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 3px;
+  background: var(--grad);
+  background-size: 300% 100%;
+  animation: hero-sweep 26s linear infinite;
+}
 .site-header .wrap {
   display: flex;
   align-items: center;
@@ -316,8 +381,15 @@ main { padding: 3rem 0 6rem; }
   min-height: 4rem;
   flex-wrap: wrap;
 }
-.brand { color: var(--fg); font-weight: 600; white-space: nowrap; }
-.brand:hover { text-decoration: none; color: var(--accent); }
+.brand {
+  font-family: var(--display);
+  color: var(--fg);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  font-size: 1.05rem;
+  white-space: nowrap;
+}
+.brand:hover { text-decoration: none; }
 .site-nav {
   display: flex;
   gap: 1.1rem;
@@ -326,19 +398,34 @@ main { padding: 3rem 0 6rem; }
   align-items: baseline;
 }
 .site-nav a { color: var(--fg-dim); }
-.site-nav a:hover { color: var(--fg); text-decoration: none; }
-.site-nav a[aria-current='page'] { color: var(--accent); }
-
-.theme-toggle {
-  background: none;
-  border: 0;
-  color: var(--fg-faint);
-  font: inherit;
-  font-size: 0.78rem;
-  padding: 0;
-  cursor: pointer;
+.site-nav a:hover { color: var(--yellow); text-decoration: none; }
+.site-nav a[aria-current='page'] {
+  color: var(--red);
+  font-weight: 700;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 5px;
 }
-.theme-toggle:hover { color: var(--fg); }
+
+/* The switch reads as a chip in a primary: at 0.78rem of muted grey it was
+   invisible beside the nav, and it is the one control on the page. */
+.theme-toggle {
+  background: color-mix(in srgb, var(--blue) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--blue) 55%, transparent);
+  border-radius: 999px;
+  color: var(--blue);
+  font: inherit;
+  font-size: 0.74rem;
+  line-height: 1;
+  padding: 0.32em 0.62em;
+  cursor: pointer;
+  transition: background 0.18s ease, color 0.18s ease, border-color 0.18s ease;
+}
+.theme-toggle:hover {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--on-accent);
+}
 
 .site-footer {
   color: var(--fg-faint);
@@ -347,20 +434,121 @@ main { padding: 3rem 0 6rem; }
   line-height: 1.9;
 }
 .site-footer a { color: var(--fg-dim); }
+.site-footer a:hover { color: var(--yellow); }
 .site-footer .footer-grid {
   display: flex;
   gap: 2rem;
   flex-wrap: wrap;
   justify-content: space-between;
-  border-top: 1px solid var(--line-soft);
+  border-top: 2px solid transparent;
+  border-image: var(--grad) 1;
   padding-top: 1.5rem;
 }
 
 /* --- hero ---------------------------------------------------------------- */
 
-.hero { padding: 0.5rem 0 1rem; }
+.hero { padding: 1rem 0 1.6rem; }
+
+/* The front page is a title, not a screenshot of a terminal. Big, bold, in the
+   primaries, with a glow that breathes. The animation is three CSS-only parts:
+   the gradient sweeping through the letters, a blurred halo behind them, and a
+   very slow scale. All of it stops for a reader who asked for less motion. */
+.hero-title {
+  position: relative;
+  isolation: isolate;
+  margin: 0 0 1.1rem;
+  font-family: var(--display);
+  font-size: clamp(2.1rem, 10vw, 7.6rem);
+  font-weight: 900;
+  line-height: 0.94;
+  letter-spacing: -0.055em;
+  color: var(--fg);
+  overflow-wrap: break-word;
+}
+
+/* the halo: three primary blooms, blurred past recognition into light */
+.hero-title::before {
+  content: "";
+  position: absolute;
+  inset: -22% 0 -26% 0;
+  z-index: -1;
+  border-radius: 50%;
+  filter: blur(42px);
+  opacity: 0.6;
+  background:
+    radial-gradient(34% 58% at 20% 50%, color-mix(in srgb, var(--red) 60%, transparent), transparent 72%),
+    radial-gradient(30% 54% at 50% 44%, color-mix(in srgb, var(--yellow) 55%, transparent), transparent 72%),
+    radial-gradient(36% 60% at 80% 56%, color-mix(in srgb, var(--blue) 60%, transparent), transparent 72%);
+  animation: hero-halo 9s ease-in-out infinite alternate;
+}
+
+.hero-word { display: inline-block; }
+
+@supports (background-clip: text) or (-webkit-background-clip: text) {
+  .hero-word {
+    background-image: var(--grad);
+    background-size: 300% 100%;
+    background-position: 0% 50%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 0 0.16em color-mix(in srgb, var(--blue) 55%, transparent))
+      drop-shadow(0 0 0.36em color-mix(in srgb, var(--red) 35%, transparent));
+    animation: hero-sweep 13s linear infinite, hero-glow 6s ease-in-out infinite alternate;
+  }
+}
+
+@keyframes hero-sweep {
+  from { background-position: 0% 50%; }
+  to   { background-position: 300% 50%; }
+}
+
+@keyframes hero-glow {
+  from {
+    filter: drop-shadow(0 0 0.14em color-mix(in srgb, var(--blue) 55%, transparent))
+      drop-shadow(0 0 0.3em color-mix(in srgb, var(--red) 30%, transparent));
+  }
+  to {
+    filter: drop-shadow(0 0 0.2em color-mix(in srgb, var(--yellow) 65%, transparent))
+      drop-shadow(0 0 0.5em color-mix(in srgb, var(--blue) 45%, transparent));
+  }
+}
+
+@keyframes hero-halo {
+  from { opacity: 0.45; transform: scale(0.98) translateY(0.02em); }
+  to   { opacity: 0.75; transform: scale(1.03) translateY(-0.02em); }
+}
+
+/* the rule under the title: the same gradient, moving much more slowly */
+.hero-rule {
+  height: 5px;
+  width: min(24rem, 62%);
+  margin: 0 0 1.5rem;
+  border-radius: 999px;
+  background: var(--grad);
+  background-size: 300% 100%;
+  animation: hero-sweep 22s linear infinite;
+}
+
+.hero .prompt {
+  color: var(--fg-faint);
+  font-size: 0.78rem;
+  letter-spacing: 0.02em;
+  margin: 0 0 0.8rem;
+}
+.hero .prompt .prompt-mark { color: var(--yellow); font-weight: 700; }
 .hero .lede { max-width: 58ch; color: var(--fg-dim); font-size: 1rem; }
-.hero .prompt { color: var(--accent-dim); font-size: 0.8rem; margin-bottom: 0.4rem; }
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-word,
+  .hero-title::before,
+  .hero-rule,
+  h2.no-hash::after {
+    animation: none !important;
+  }
+  .hero-word { background-position: 38% 50%; }
+}
 
 /* --- lists --------------------------------------------------------------- */
 
@@ -377,12 +565,18 @@ main { padding: 3rem 0 6rem; }
   padding-top: 0.35rem;
   white-space: nowrap;
 }
-.note-item h3 { margin: 0 0 0.3rem; font-size: 1rem; }
+.note-item h3 { margin: 0 0 0.3rem; font-size: 1.05rem; }
 .note-item h3::before { content: none; }
 .note-item h3 a { color: var(--fg); }
-.note-item h3 a:hover { color: var(--accent); text-decoration: none; }
+.note-item h3 a:hover { color: var(--yellow); text-decoration: none; }
 .note-item .desc { color: var(--fg-dim); font-size: 0.88rem; margin: 0 0 0.55rem; }
 .note-item .meta { font-size: 0.75rem; color: var(--fg-faint); display: flex; gap: 1rem; flex-wrap: wrap; }
+
+/* the date column carries the primary rotation, so a list of notes reads as a
+   colour rhythm instead of a wall of grey */
+.note-list .note-item:nth-child(3n + 1) time { color: color-mix(in srgb, var(--red) 60%, var(--fg-faint)); }
+.note-list .note-item:nth-child(3n + 2) time { color: color-mix(in srgb, var(--yellow) 60%, var(--fg-faint)); }
+.note-list .note-item:nth-child(3n) time { color: color-mix(in srgb, var(--blue) 60%, var(--fg-faint)); }
 @media (max-width: 34rem) {
   .note-item { grid-template-columns: 1fr; }
   .note-item time { padding-top: 0; }
@@ -392,12 +586,18 @@ main { padding: 3rem 0 6rem; }
 
 .tags { display: flex; gap: 0.9rem; flex-wrap: wrap; padding: 0; list-style: none; margin: 0; }
 .tag { font-size: 0.78rem; color: var(--fg-dim); }
-.tag::before { content: "#"; color: var(--fg-faint); }
-.tag:hover { color: var(--accent); text-decoration: none; }
+.tag::before { content: "#"; color: var(--red); }
+.tag:hover { color: var(--yellow); text-decoration: none; }
 
 .tag-cloud { display: flex; gap: 0.75rem 1.1rem; flex-wrap: wrap; list-style: none; padding: 0; margin: 0; }
 .tag-cloud li { display: flex; gap: 0.35rem; align-items: baseline; }
 .tag-cloud .count { color: var(--fg-faint); font-size: 0.7rem; }
+
+/* the hash marks walk the primaries, so the tag cloud is a colour field
+   without any one tag shouting */
+.tag-cloud li:nth-child(3n + 1) .tag::before { color: var(--red); }
+.tag-cloud li:nth-child(3n + 2) .tag::before { color: var(--yellow); }
+.tag-cloud li:nth-child(3n) .tag::before { color: var(--blue); }
 
 /* --- art ----------------------------------------------------------------- */
 
@@ -479,7 +679,7 @@ main { padding: 3rem 0 6rem; }
 .prose > p:first-of-type { font-size: 1.02rem; }
 
 .post-header { max-width: var(--measure); }
-.post-header h1 { font-size: 1.7rem; }
+.post-header h1 { font-size: 2.1rem; font-weight: 900; }
 .post-header .meta {
   color: var(--fg-faint);
   font-size: 0.76rem;

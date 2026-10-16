@@ -2,7 +2,6 @@
 import { url } from '../lib/url';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import NoteItem from '../components/NoteItem.astro';
-import Ascii from '../components/Ascii.astro';
 import { getNotes, tagIndex } from '../lib/site';
 import { SITE } from '../consts';
 
@@ -15,16 +14,11 @@ const pictures_ = new Set(pictures).size;
 <BaseLayout>
   <div class="page-grid">
     <section class="hero bleed">
-      <h1 class="sr-only">{SITE.title} — {SITE.tagline}</h1>
-      <div class="prompt" aria-hidden="true">~/notes $ ls -1 --recent</div>
-      <div class="bare-art">
-        <Ascii
-          piece="big-text"
-          options={{ text: 'notes' }}
-          framed={false}
-          label={`${SITE.title}, in big ascii letters`}
-        />
-      </div>
+      <h1 class="hero-title"><span class="hero-word">Terminal Notes</span></h1>
+      <div class="hero-rule" aria-hidden="true"></div>
+      <p class="prompt" aria-hidden="true">
+        <span class="prompt-mark">$</span> ls -1 --recent ~/notes
+      </p>
       <p class="lede">{SITE.description}</p>
     </section>
 
