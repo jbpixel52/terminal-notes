@@ -117,7 +117,12 @@ def main() -> int:
         css_url = urllib.parse.urljoin(base, assets[0])
         s, css = get(css_url)
         check(s == 200 and len(css) > 2000, f"the stylesheet loads ({css_url})", f"status {s}")
-        check("feTurbulence" in css or "grain-shift" in css, "the stylesheet carries the grain gradient")
+        # the design is one bit: the live sheet must carry the dither tiles and
+        # the two tokens the whole page is made of, not a colour palette
+        check(
+            "svg+xml" in css and "--paper" in css and "--p-tint" in css,
+            "the live stylesheet carries the one-bit palette and the dither tiles",
+        )
 
     if note_links:
         s, note = get(note_links[0])
