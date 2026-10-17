@@ -26,59 +26,74 @@ const withSource = pictures.filter((p) => p.art && sources[p.art]).length;
   title="Art"
   description="Every ascii picture on this site: photographs decoded to character grids, and the schematic pieces from ascii.rest."
 >
-  <div class="page-grid">
-    <div class="page-main bleed">
-      <h1>art</h1>
-      <p class="lede">
-        {pictures.length} pictures, one per note. {generated} are photographs decoded onto a
-        character grid at 132 × 37 cells — mapped through a density ramp for the glyphs and a
-        64-colour palette for the canvas — and {catalogue}
-        {catalogue === 1 ? ' is' : ' are'} a schematic piece from
-        <a href="https://ascii.rest/" rel="noopener noreferrer">ascii.rest</a> by
-        <a href="https://github.com/bas3line" rel="noopener noreferrer">@bas3line</a> (MIT).
-      </p>
-      <p class="lede">
-        Each picture decodes when it scrolls into view, and holds. With JavaScript off, or
-        with reduced motion asked for, the finished image is already in the page as plain
-        text.
-      </p>
-    </div>
-
-    <div class="page-main">
-      <div class="grid-2 art-grid">
-        {pictures.map(({ note, art, piece }) =>
-          art ? (
-            <Art slug={art} caption={`used on “${note.data.title}”`} />
-          ) : (
-            <Ascii piece={piece!} caption={`used on “${note.data.title}”`} />
-          ),
-        )}
+  <div class="note-desktop">
+    <div class="window window-shadow note-shell">
+      <div class="title-bar title-bar--active">
+        <span class="close-box" aria-hidden="true"></span>
+        <h1 class="title">Art — {pictures.length} pictures</h1>
+        <span class="zoom-box" aria-hidden="true"></span>
       </div>
-    </div>
-
-    <aside class="page-rail" aria-label="Sources">
-      <div class="rail-block">
-        <h2 class="rail-title">sources</h2>
-        <p style="margin:0 0 0.6rem;color:var(--fg-dim);font-size:0.82rem">
-          Photographs come from <a href="https://wallhaven.cc/" rel="noopener noreferrer">wallhaven.cc</a>
-          search results, SFW and general category only. wallhaven hosts user uploads with
-          varying licences — check the terms of an image before republishing it, and link it
-          as this site does.
+      <div class="window-body">
+        <p class="lede">
+          {generated} of these are photographs decoded onto a character grid at 132 × 37
+          cells — mapped through a density ramp for the glyphs and a 64-colour palette that
+          travels with the module. The other {catalogue}
+          {catalogue === 1 ? ' is' : ' are'} a schematic piece from
+          <a href="https://ascii.rest/" rel="noopener noreferrer">ascii.rest</a> by
+          <a href="https://github.com/bas3line" rel="noopener noreferrer">@bas3line</a> (MIT).
         </p>
-        <dl class="rail-meta">
-          <dt>sourced</dt><dd>{withSource} of {generated}</dd>
-          <dt>grid</dt><dd>132 × 37 cells</dd>
-          <dt>palette</dt><dd>up to 64 colours</dd>
-        </dl>
+        <p class="lede">
+          Each picture decodes when it scrolls into view, and holds. With JavaScript off, or
+          with reduced motion asked for, the finished image is already in the page as plain
+          text. On this desktop it is rendered to ink: the site is one bit, so the colour
+          the canvas holds is filtered down to the same black the rest of the page uses.
+        </p>
+
+        <div class="grid-2 art-grid">
+          {pictures.map(({ note, art, piece }) =>
+            art ? (
+              <Art slug={art} caption={`used on “${note.data.title}”`} />
+            ) : (
+              <Ascii piece={piece!} caption={`used on “${note.data.title}”`} />
+            ),
+          )}
+        </div>
       </div>
-      <nav class="rail-block" aria-label="Elsewhere">
-        <h2 class="rail-title">elsewhere</h2>
-        <ul class="rail-links">
-          <li><a href={url('/')}>the front page</a></li>
-          <li><a href={url('/notes/')}>every note</a></li>
-          <li><a href={url('/colophon/')}>how it is built</a></li>
-        </ul>
-      </nav>
+    </div>
+
+    <aside class="window window-shadow info-window" aria-label="Sources">
+      <div class="title-bar title-bar--inactive">
+        <span class="close-box" aria-hidden="true"></span>
+        <span class="title">Info</span>
+        <span class="zoom-box" aria-hidden="true"></span>
+      </div>
+      <div class="window-body">
+        <div class="note-rail">
+          <div class="rail-block">
+            <h2 class="rail-title">sources</h2>
+            <p style="margin:0 0 0.6rem">
+              Photographs come from
+              <a href="https://wallhaven.cc/" rel="noopener noreferrer">wallhaven.cc</a>
+              search results, SFW and general category only. wallhaven hosts user uploads
+              with varying licences — check the terms of an image before republishing it,
+              and link it as this site does.
+            </p>
+            <dl class="rail-meta">
+              <dt>sourced</dt><dd>{withSource} of {generated}</dd>
+              <dt>grid</dt><dd>132 × 37 cells</dd>
+              <dt>palette</dt><dd>up to 64 colours</dd>
+            </dl>
+          </div>
+          <nav class="rail-block" aria-label="Elsewhere">
+            <h2 class="rail-title">elsewhere</h2>
+            <ul class="rail-links">
+              <li><a href={url('/')}>the front page</a></li>
+              <li><a href={url('/notes/')}>every note</a></li>
+              <li><a href={url('/colophon/')}>how it is built</a></li>
+            </ul>
+          </nav>
+        </div>
+      </div>
     </aside>
   </div>
 </BaseLayout>

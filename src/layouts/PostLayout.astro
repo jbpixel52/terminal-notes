@@ -19,76 +19,104 @@ const sections = headings.filter((h) => h.depth === 2);
 ---
 <BaseLayout title={title} description={description}>
   <article>
-    <div class="note-shell">
-      <header class="post-header">
-        <h1>{title}</h1>
-        <div class="meta">
-          <time datetime={pubDate.toISOString()}>{formatDate(pubDate)}</time>
-          <span>{minutes(note)} min read</span>
-          {updatedDate && <span>updated {formatDate(updatedDate)}</span>}
+    <div class="note-desktop">
+      <div class="window window-shadow note-shell">
+        <div class="title-bar title-bar--active">
+          <a
+            class="close-box"
+            href={url('/notes/')}
+            aria-label="Close this note and go back to all notes"
+          ></a>
+          <span class="title">{title}</span>
+          <span class="zoom-box" aria-hidden="true"></span>
         </div>
-        <p class="lede">{description}</p>
-        {tags.length > 0 && (
-          <ul class="tags">
-            {tags.map((tag) => <li><a class="tag" href={url(`/tags/${tag}/`)}>{tag}</a></li>)}
-          </ul>
-        )}
-      </header>
+        <div class="window-body">
+          <header class="post-header">
+            <h1>{title}</h1>
+            <div class="meta">
+              <time datetime={pubDate.toISOString()}>{formatDate(pubDate)}</time>
+              <span>{minutes(note)} min read</span>
+              {updatedDate && <span>updated {formatDate(updatedDate)}</span>}
+            </div>
+            <p class="lede">{description}</p>
+          </header>
 
-      <div class="post-hero">
-        {ascii.art ? (
-          <Art slug={ascii.art} caption={ascii.caption} label={`ascii art for “${title}”`} />
-        ) : (
-          <Ascii
-            piece={ascii.piece!}
-            options={ascii.options}
-            fps={ascii.fps}
-            mono={ascii.mono}
-            caption={ascii.caption ?? title}
-            label={`ascii art for “${title}”`}
-          />
-        )}
-      </div>
-
-      <div class="note-grid">
-        <div class="prose">
-          <slot />
-        </div>
-
-        <aside class="note-rail" aria-label="About this note">
-          {sections.length > 1 && (
-            <nav class="rail-block">
-              <h2 class="rail-title">on this page</h2>
-              <ol class="rail-toc">
-                {sections.map((h) => <li><a href={`#${h.slug}`}>{h.text}</a></li>)}
-              </ol>
-            </nav>
-          )}
-
-          <div class="rail-block">
-            <h2 class="rail-title">meta</h2>
-            <dl class="rail-meta">
-              <dt>published</dt>
-              <dd><time datetime={pubDate.toISOString()}>{formatDate(pubDate)}</time></dd>
-              <dt>reading</dt>
-              <dd>{minutes(note)} min</dd>
-              <dt>tags</dt>
-              <dd class="rail-tags">
-                {tags.map((tag) => <a class="tag" href={url(`/tags/${tag}/`)}>{tag}</a>)}
-              </dd>
-            </dl>
+          <div class="post-hero">
+            {ascii.art ? (
+              <Art slug={ascii.art} caption={ascii.caption} label={`ascii art for “${title}”`} />
+            ) : (
+              <Ascii
+                piece={ascii.piece!}
+                options={ascii.options}
+                fps={ascii.fps}
+                mono={ascii.mono}
+                caption={ascii.caption ?? title}
+                label={`ascii art for “${title}”`}
+              />
+            )}
           </div>
 
-          <nav class="rail-block">
-            <h2 class="rail-title">nearby</h2>
-            <ul class="rail-links">
-              {prev && <li><a href={url(`/notes/${prev.id}/`)}>← {prev.data.title}</a></li>}
-              {next && <li><a href={url(`/notes/${next.id}/`)}>{next.data.title} →</a></li>}
-              <li><a href={url('/notes/')}>all notes</a></li>
-            </ul>
-          </nav>
-        </aside>
+          <div class="prose">
+            <slot />
+          </div>
+
+          <footer class="post-footer">
+            <p>
+              Filed under{' '}
+              {tags.map((tag, i) => (
+                <span>
+                  <a class="tag" href={url(`/tags/${tag}/`)}>{tag}</a>
+                  {i < tags.length - 1 ? ', ' : ''}
+                </span>
+              ))}
+              . <a href={url('/notes/')}>All notes</a>.
+            </p>
+          </footer>
+        </div>
       </div>
+
+      <aside class="window window-shadow info-window" aria-label="About this note">
+        <div class="title-bar title-bar--inactive">
+          <span class="close-box" aria-hidden="true"></span>
+          <span class="title">Info</span>
+          <span class="zoom-box" aria-hidden="true"></span>
+        </div>
+        <div class="window-body">
+          <div class="note-rail">
+            {sections.length > 1 && (
+              <nav class="rail-block">
+                <h2 class="rail-title">on this page</h2>
+                <ol class="rail-toc">
+                  {sections.map((h) => <li><a href={`#${h.slug}`}>{h.text}</a></li>)}
+                </ol>
+              </nav>
+            )}
+
+            <div class="rail-block">
+              <h2 class="rail-title">meta</h2>
+              <dl class="rail-meta">
+                <dt>published</dt>
+                <dd><time datetime={pubDate.toISOString()}>{formatDate(pubDate)}</time></dd>
+                <dt>reading</dt>
+                <dd>{minutes(note)} min</dd>
+                <dt>tags</dt>
+                <dd class="rail-tags">
+                  {tags.map((tag) => <a class="tag" href={url(`/tags/${tag}/`)}>{tag}</a>)}
+                </dd>
+              </dl>
+            </div>
+
+            <nav class="rail-block">
+              <h2 class="rail-title">nearby</h2>
+              <ul class="rail-links">
+                {prev && <li><a href={url(`/notes/${prev.id}/`)}>← {prev.data.title}</a></li>}
+                {next && <li><a href={url(`/notes/${next.id}/`)}>{next.data.title} →</a></li>}
+                <li><a href={url('/notes/')}>all notes</a></li>
+              </ul>
+            </nav>
+          </div>
+        </div>
+      </aside>
     </div>
   </article>
 </BaseLayout>

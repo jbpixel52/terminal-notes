@@ -8,16 +8,30 @@ const notes = await getNotes();
 const suggestions = notes.slice(0, 3);
 ---
 <BaseLayout title="404" description="That path is not in this notebook.">
-  <h1>404 — no such note</h1>
-  <Ascii piece="not-found" caption="the path you asked for is not here" />
-  <p class="lede">
-    Nothing lives at <code>{Astro.url.pathname}</code>. It may have been renamed, or it may
-    never have existed.
-  </p>
-  <h2 class="no-hash">try instead</h2>
-  <ul>
-    <li><a href={url('/notes/')}>all notes</a></li>
-    <li><a href={url('/tags/')}>tags</a></li>
-    {suggestions.map((n) => <li><a href={url(`/notes/${n.id}/`)}>{n.data.title}</a></li>)}
-  </ul>
+  <div class="dialog window" style="max-width: 34rem; margin: 1.5rem auto 0;">
+    <div class="title-bar title-bar--active">
+      <span class="close-box" aria-hidden="true"></span>
+      <span class="title">Alert</span>
+      <span class="zoom-box" aria-hidden="true"></span>
+    </div>
+    <div class="dialog-body">
+      <h1>404 — that path is not in this notebook</h1>
+      <Ascii piece="not-found" caption="the path you asked for is not here" />
+      <p>
+        Nothing lives at <code>{Astro.url.pathname}</code>. It may have been renamed, or it
+        may never have existed. Nothing here is really thrown away, though —
+        <a href={url('/notes/')}>it is all still on the disk</a>.
+      </p>
+      <h2>try instead</h2>
+      <ul>
+        <li><a href={url('/notes/')}>all notes</a></li>
+        <li><a href={url('/tags/')}>tags</a></li>
+        {suggestions.map((n) => <li><a href={url(`/notes/${n.id}/`)}>{n.data.title}</a></li>)}
+      </ul>
+    </div>
+    <div class="dialog-buttons">
+      <a class="btn" href={url('/notes/')}>Notes</a>
+      <a class="btn btn-default" href={url('/')}>OK</a>
+    </div>
+  </div>
 </BaseLayout>

@@ -5,52 +5,65 @@ import Ascii from '../components/Ascii.astro';
 import { SITE } from '../consts';
 ---
 <BaseLayout title="About" description="What this notebook is, and what it deliberately leaves out.">
-  <h1>about</h1>
-  <div class="prose">
-    <Ascii piece="typewriter" caption="everything here was typed at least twice" />
+  <div class="window window-shadow" style="max-width: 52rem; margin-inline: auto;">
+    <div class="title-bar title-bar--active">
+      <span class="close-box" aria-hidden="true"></span>
+      <h1 class="title">About this notebook</h1>
+      <span class="zoom-box" aria-hidden="true"></span>
+    </div>
+    <div class="window-body">
+      <div class="prose">
+        <Ascii piece="typewriter" caption="everything here was typed at least twice" />
 
-    <p>
-      This is a working notebook. It collects things learned while doing the job —
-      standing up servers, moving things around on disk, wiring services together,
-      writing and testing web applications — with the boring parts (the ones where
-      nothing goes wrong) left out.
-    </p>
+        <p>
+          This is a working notebook. It collects things learned while doing the job —
+          standing up servers, moving things around on disk, wiring services together,
+          writing and testing web applications — with the boring parts (the ones where
+          nothing goes wrong) left out.
+        </p>
 
-    <p>
-      The rule for a note to exist: it has to contain at least one thing that was
-      <em>not</em> obvious, and that I got wrong before getting right. Documentation
-      is easy to find; the reason a command failed at 2am is not.
-    </p>
+        <p>
+          The rule for a note to exist: it has to contain at least one thing that was
+          <em>not</em> obvious, and that I got wrong before getting right. Documentation
+          is easy to find; the reason a command failed at 2am is not.
+        </p>
 
-    <h2>What is deliberately missing</h2>
-    <p>
-      Everything that identifies a person or a customer. No real names, no company or
-      product names, no hostnames, no IP addresses, no keys, no paths with a username
-      in them, no ticket numbers, no screenshots of real data. Where a story needs a
-      subject it says “a franchise ordering portal” or “a mini-PC with four SATA
-      drives” instead.
-    </p>
-    <p>
-      That is enforced, not promised: <code>npm run anon</code> scans the sources and
-      the built output for the shapes of private data (emails, IPs, credentials,
-      personal paths) and for a local, git-ignored list of terms, and fails the build
-      if any of them appear. The gate is described in full on the
-      <a href={url('/colophon/')}>colophon</a>.
-    </p>
+        <h2>What is deliberately missing</h2>
+        <p>
+          Everything that identifies a person or a customer. No real names, no company or
+          product names, no hostnames, no IP addresses, no keys, no paths with a username
+          in them, no ticket numbers, no screenshots of real data. Where a story needs a
+          subject it says “a franchise ordering portal” or “a mini-PC with four SATA
+          drives” instead.
+        </p>
+        <p>
+          That is enforced, not promised: <code>npm run anon</code> scans the sources and
+          the built output for the shapes of private data (emails, IPs, credentials,
+          personal paths) and for a local, git-ignored list of terms, and fails the build
+          if any of them appear. The gate is described in full on the
+          <a href={url('/colophon/')}>colophon</a>.
+        </p>
 
-    <h2>House style</h2>
-    <ul>
-      <li>Commands are shown exactly as they were run, including the flags that mattered.</li>
-      <li>Error strings are quoted verbatim — they are how you find this page later.</li>
-      <li>Each note carries one picture: a photograph decoded to ascii, chosen to suit the subject.</li>
-      <li>Headings are bold and set in the site's primary colours; the prose is monospace and plain, because that is the voice.</li>
-      <li>Dates are pinned to UTC, so a page means the same thing wherever it is built.</li>
-    </ul>
+        <h2>House style</h2>
+        <ul>
+          <li>Commands are shown exactly as they were run, including the flags that mattered.</li>
+          <li>Error strings are quoted verbatim — they are how you find this page later.</li>
+          <li>Each note carries one picture: a photograph decoded to ascii, chosen to suit the subject.</li>
+          <li>
+            The site is set as a one-bit System 7 desktop — Chicago for the chrome, Monaco
+            for the prose, and every grey a dither pattern rather than a colour — because a
+            notebook about machines should look like one of them.
+          </li>
+          <li>Dates are pinned to UTC, so a page means the same thing wherever it is built.</li>
+        </ul>
 
-    <h2>Contact</h2>
-    <p>
-      There is no contact form and no analytics. The site is static: a build produces
-      HTML, and that is what you were served.
-    </p>
+        <h2>Contact</h2>
+        <p>
+          There is no contact form and no analytics. The site is static: a build produces
+          HTML, and that is what you were served. {SITE.title} is written by
+          {SITE.author}.
+        </p>
+      </div>
+    </div>
   </div>
 </BaseLayout>

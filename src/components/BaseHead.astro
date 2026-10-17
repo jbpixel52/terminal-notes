@@ -1,6 +1,8 @@
 ---
 import { url } from '../lib/url';
 import { SITE } from '../consts';
+import chicago from '../assets/fonts/ChiKareGo2.woff2?url';
+import monaco from '../assets/fonts/monaco.woff2?url';
 
 interface Props { title: string; description: string; image?: string; }
 const { title, description } = Astro.props;
@@ -12,7 +14,7 @@ const canonical = new URL(Astro.url.pathname, Astro.site ?? SITE.url);
 <title>{title}</title>
 <meta name="description" content={description} />
 <link rel="canonical" href={canonical} />
-<meta name="color-scheme" content="dark light" />
+<meta name="color-scheme" content="light dark" />
 <meta property="og:type" content="website" />
 <meta property="og:title" content={title} />
 <meta property="og:description" content={description} />
@@ -20,15 +22,21 @@ const canonical = new URL(Astro.url.pathname, Astro.site ?? SITE.url);
 <meta name="twitter:card" content="summary" />
 <link rel="icon" href={url('/favicon.svg')} type="image/svg+xml" />
 <link rel="alternate" type="application/rss+xml" title={SITE.title} href={url('/rss.xml')} />
+<link rel="preload" as="font" type="font/woff2" href={chicago} crossorigin />
+<link rel="preload" as="font" type="font/woff2" href={monaco} crossorigin />
 <script is:inline>
-  // Set the theme before first paint so there is no flash.
+  // Paper by default — this is a System 7 desktop — and inverted video when
+  // the reader has asked for it, here or on their own machine.
   (() => {
     try {
       const saved = localStorage.getItem('theme');
-      const prefersLight = window.matchMedia('(prefers-color-scheme: light)').matches;
-      if (saved === 'light' || (saved === null && prefersLight)) {
-        document.documentElement.dataset.theme = 'light';
-      }
+      const wantsInvert =
+        saved === 'invert' ||
+        saved === 'dark' ||
+        ((saved === null || saved === '') &&
+          window.matchMedia('(prefers-color-scheme: dark)').matches);
+      if (wantsInvert) document.documentElement.dataset.theme = 'invert';
+      else delete document.documentElement.dataset.theme;
     } catch {}
   })();
 </script>

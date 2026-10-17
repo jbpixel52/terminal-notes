@@ -8,41 +8,43 @@ const notes = await getNotes();
 const tags = tagIndex(notes);
 ---
 <BaseLayout title="Notes" description={`All ${notes.length} notes, newest first.`}>
-  <div class="page-grid">
-    <div class="page-main bleed">
-      <h1>notes</h1>
-      <p class="lede">
-        {notes.length} entries. Everything here is something that went wrong first, or a
-        thing I assumed and then checked. Newest first.
-      </p>
+  <div class="window window-shadow">
+    <div class="title-bar title-bar--active">
+      <span class="close-box" aria-hidden="true"></span>
+      <h1 class="title">Notes — {notes.length} items</h1>
+      <span class="zoom-box" aria-hidden="true"></span>
     </div>
+    <div class="window-body">
+      <p class="lede">
+        Everything here is something that went wrong first, or a thing I assumed and then
+        checked. Newest first.
+      </p>
 
-    <div class="page-main">
-      <ul class="note-list">
+      <div class="finder-head" aria-hidden="true">
+        <span>Name</span><span>Tags</span><span>Date</span><span>Time</span>
+      </div>
+      <ul class="finder-list">
         {notes.map((note) => <NoteItem note={note} />)}
       </ul>
     </div>
+  </div>
 
-    <aside class="page-rail" aria-label="Index">
-      <nav class="rail-block" aria-label="Tags">
-        <h2 class="rail-title">by tag</h2>
-        <ul class="tag-cloud">
-          {[...tags].map(([tag, list]) => (
-            <li>
-              <a class="tag" href={url(`/tags/${tag}/`)}>{tag}</a>{' '}
-              <span class="count">{list.length}</span>
-            </li>
-          ))}
-        </ul>
-      </nav>
-      <nav class="rail-block" aria-label="Elsewhere">
-        <h2 class="rail-title">elsewhere</h2>
-        <ul class="rail-links">
-          <li><a href={url('/')}>the front page</a></li>
-          <li><a href={url('/art/')}>the art</a></li>
-          <li><a href={url('/tags/')}>all tags</a></li>
-        </ul>
-      </nav>
-    </aside>
+  <div class="window window-shadow" style="margin-top: 1.5rem;">
+    <div class="title-bar title-bar--inactive">
+      <span class="close-box" aria-hidden="true"></span>
+      <span class="title">Tags</span>
+      <span class="zoom-box" aria-hidden="true"></span>
+    </div>
+    <div class="window-body">
+      <h2 class="rail-title">by tag</h2>
+      <ul class="tag-cloud">
+        {[...tags].map(([tag, list]) => (
+          <li>
+            <a class="tag" href={url(`/tags/${tag}/`)}>{tag}</a>{' '}
+            <span class="count">{list.length}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
   </div>
 </BaseLayout>

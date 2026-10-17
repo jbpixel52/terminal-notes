@@ -7,8 +7,8 @@ animated on a canvas by [ascii.rest](https://ascii.rest/) — the piece contract
 and runtime by [@bas3line](https://github.com/bas3line) (MIT).
 
 40 notes, 43 tags, 40 pictures. Static output: no server, no database, no
-analytics, no third-party scripts except the ascii runtime and a 3 KB font
-fallback that only browsers without block glyphs fetch.
+analytics, no third-party scripts. The four bitmap faces are self-hosted too, so
+no font service is asked for anything.
 
 ## Run it
 
@@ -133,9 +133,13 @@ src/
   art/sources.js           where each photograph came from (generated)
   components/Art.astro     a generated picture: still + canvas + injector
   components/Ascii.astro   a catalogue piece from ascii.rest, validated by name
-  layouts/                 BaseLayout (shell) + PostLayout (note + rail)
+  components/Header.astro  the menu bar: Apple menu, nav, clock, Invert
+  components/MacIcon.astro 1-bit pixel icons (document, folder, disk, trash)
+  components/NoteItem.astro a Finder list row
+  layouts/                 BaseLayout (shell) + PostLayout (note + Info window)
   pages/                   index, /notes, /notes/<slug>, /tags/<tag>, /art, …
-  styles/global.css        the whole design system, ~720 lines
+  assets/fonts/            Chicago, Geneva, Monaco, ChicagoFLF (woff2, self-hosted)
+  styles/global.css        the whole design system, ~950 lines
 tools/
   make-art.py              wallhaven -> ascii piece modules (Pillow + urllib)
 scripts/
@@ -145,28 +149,39 @@ scripts/
 
 ## Design notes
 
-- Bold primary colours (red, yellow, blue, green) over a near-black ground, and
-  a near-black and bone-white pair of grounds: the colour is spent on a gradient
-  title, a header stripe, a rule under section headings, and rotating marks on
-  tags and dates.
-- The front page is a title, not a screenshot of a terminal: one big gradient
-  wordmark that sweeps through the primaries, a blurred halo behind it, and a
-  rule below. CSS only — three keyframes and a `@supports` guard for the clipped
-  gradient — and it stops entirely under `prefers-reduced-motion`.
-- Two faces: a bold display stack for headings and the wordmark, monospace for
-  everything else, so the terminal voice survives the colour.
-- Dark by default, with a light palette for readers whose system prefers it;
-  the choice is stored and applied before first paint.
-- Structure from hairline rules, with the primaries used as marks rather than as
-  backgrounds.
-- Motion respects `prefers-reduced-motion`: the ascii art holds its first
-  frame, the CSS stops.
-- The only client-side JavaScript is the theme toggle and the ascii runtime.
+- The site is dressed as a **System 7 Macintosh**: a dithered screen, white
+  windows with pinstriped title bars, close and zoom boxes, and a menu bar whose
+  left edge is the rainbow Apple. The front page is a Finder desktop — the
+  windows on it can be dragged, and <kbd>Esc</kbd> puts them back — and every
+  other page is a document window with an **Info** window beside it.
+- It is a **one-bit** design: one ink, one paper, and every grey on the page is a
+  **dither pattern** (an SVG checkerboard tiled one pixel per cell) rather than a
+  colour, because that is how a one-bit screen made grey. The only colour is the
+  Apple in the menu bar, the one place System 7 spent it deliberately.
+- **Invert** in the menu bar swaps ink and paper — the Mac's inverted video. The
+  ascii pictures invert with it, the choice is kept in local storage, and a
+  reader whose system prefers dark starts inverted.
+- Four self-hosted faces: Chicago for the chrome, Geneva for small labels, Monaco
+  for the prose and the code (this is a notes site; its voice is monospace), and
+  Chicago again as an outline face for the wordmark.
+- Type over a texture is heavier than type on paper, so a tint behind text is a
+  *sparse* dither: the 25% checkerboard is fine behind black letters and is drawn
+  at half density in the inverted theme, where white dots behind white letters
+  would shred them.
+- Motion respects `prefers-reduced-motion`: the ascii art holds its first frame,
+  the CSS stops.
+- The only client-side JavaScript is the menu-bar clock, the Invert switch, the
+  desktop's dragging, and the ascii runtime.
 - Dates are formatted in UTC so two builds of the same commit agree.
 
 ## Credits and licences
 
 - [Astro](https://astro.build/) — static site framework (MIT).
+- [system.css](https://github.com/sakofchit/system.css) by
+  [@sakofchit](https://github.com/sakofchit) — the System 7 window, menu, button
+  and scrollbar chrome, the dither patterns, and the vendored bitmap fonts:
+  Chicago 12 and Geneva 9 as recreated by Giles Booth, a Chicago outline face,
+  and Monaco (MIT).
 - [ascii.rest](https://ascii.rest/) by [@bas3line](https://github.com/bas3line)
   — the piece contract and the canvas runtime that animates each picture (MIT).
 - Photographs for the generated art come from

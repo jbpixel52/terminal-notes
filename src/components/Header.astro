@@ -10,36 +10,83 @@ const isCurrent = (href: string) => {
   return target === '/' ? path === '/' : path === target || path.startsWith(target + '/');
 };
 ---
+
 <header class="site-header">
   <div class="wrap">
-    <a class="brand" href={url('/')}>{SITE.title}</a>
-    <nav class="site-nav" aria-label="Primary">
+    <details class="apple-menu">
+      <summary aria-label="Apple menu"><span class="apple"></span></summary>
+      <ul class="menu" role="menu">
+        <li><a role="menuitem" href={url('/')}>Home</a></li>
+        <li><a role="menuitem" href={url('/notes/')}>All notes</a></li>
+        <li><a role="menuitem" href={url('/art/')}>The art</a></li>
+        <li class="sep"><a role="menuitem" href={url('/about/')}>About this notebook</a></li>
+        <li><a role="menuitem" href={url('/colophon/')}>Colophon</a></li>
+        <li class="sep"><a role="menuitem" href={url('/rss.xml')}>RSS feed</a></li>
+        <li><a role="menuitem" href={url('/sitemap-index.xml')}>Sitemap</a></li>
+      </ul>
+    </details>
+    <nav class="menubar-nav" aria-label="Primary">
       {NAV.map((item) => (
-        <a href={url(item.href)} aria-current={isCurrent(item.href) ? 'page' : undefined}>
+        <a class="menubar-item" href={url(item.href)} aria-current={isCurrent(item.href) ? 'page' : undefined}>
           {item.label}
         </a>
       ))}
-      <button class="theme-toggle" type="button" data-theme-toggle aria-label="Switch colour theme">
-        [light]
-      </button>
     </nav>
+    <div class="menubar-right">
+      <button
+        class="menubar-item"
+        type="button"
+        data-theme-toggle
+        aria-pressed="false"
+        aria-label="Invert the screen"
+      >
+        Invert
+      </button>
+      <span class="menubar-clock" data-clock aria-hidden="true">--:--</span>
+    </div>
   </div>
 </header>
 
 <script>
+  // the Apple menu closes like a menu: a click outside, or Escape
+  const apple = document.querySelector<HTMLDetailsElement>('.apple-menu');
+  if (apple) {
+    document.addEventListener('click', (e) => {
+      if (apple.open && !apple.contains(e.target as Node)) apple.open = false;
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && apple.open) apple.open = false;
+    });
+  }
+
+  // the clock: local time, the way a menu-bar clock reads
+  const clock = document.querySelector<HTMLElement>('[data-clock]');
+  const tick = () => {
+    if (!clock) return;
+    const now = new Date();
+    const time = now.toLocaleTimeString('en-GB', { hour: 'numeric', minute: '2-digit', hour12: true });
+    const day = now.toLocaleDateString('en-GB', { weekday: 'short' });
+    clock.textContent = `${day} ${time.replace(/(am|pm)$/i, (m) => m.toUpperCase())}`;
+  };
+  tick();
+  setInterval(tick, 20000);
+
+  // the toggle: paper by default, inverted video on request
   const root = document.documentElement;
   const btn = document.querySelector<HTMLButtonElement>('[data-theme-toggle]');
   const paint = () => {
-    const light = root.dataset.theme === 'light';
-    if (btn) btn.textContent = light ? '[dark]' : '[light]';
+    const inverted = root.dataset.theme === 'invert';
+    if (!btn) return;
+    btn.textContent = inverted ? '✓ Invert' : 'Invert';
+    btn.setAttribute('aria-pressed', String(inverted));
   };
   paint();
   btn?.addEventListener('click', () => {
-    const light = root.dataset.theme === 'light';
-    if (light) delete root.dataset.theme;
-    else root.dataset.theme = 'light';
+    const inverted = root.dataset.theme === 'invert';
+    if (inverted) delete root.dataset.theme;
+    else root.dataset.theme = 'invert';
     try {
-      localStorage.setItem('theme', light ? 'dark' : 'light');
+      localStorage.setItem('theme', inverted ? 'paper' : 'invert');
     } catch {}
     paint();
   });

@@ -1,241 +1,222 @@
 /* =========================================================================
-   Terminal Notes — bold, primary-coloured, still text-first.
+   Terminal Notes — dressed as a System 7 desktop.
 
-   The palette is four primaries (red, yellow, blue, green) carried over a
-   near-black ground, and they are spent deliberately: a gradient title, a
-   stripe on the header, a rule under section headings, and rotating marks on
-   tags and dates. Structure still comes from hairlines and one typewriter
-   face; the colour is what is new.
+   A classic Macintosh: a dither-patterned desktop, white windows with
+   pinstriped title bars, a menu bar across the top with the rainbow Apple,
+   Chicago for the chrome, Geneva for the small labels, and Monaco for the
+   prose — this is a notes site, its voice is monospace, and Monaco is the
+   Mac's monospace.
 
-   The background is a grain gradient in the spirit of Paper's shader of that
-   name (shaders.paper.design/grain-gradient): a flat ground, a few soft radial
-   colour washes that drift very slowly, and fine animated film grain over them.
-   It is CSS only — no WebGL, no runtime — because a shader library would be
-   the largest thing this site shipped. softness is the width of the stops,
-   intensity their opacity, noise the grain's strength.
+   It is a one-bit design on purpose. There is exactly one ink and one paper,
+   and every grey on the page is a *dither pattern* rather than a colour,
+   because that is how the machine made grey: a 1-bit screen with a 50%
+   checkerboard reads as grey at arm's length. The theme toggle inverts the
+   two (white ink on black paper), which is the Mac's own inverted video.
+
+   Fonts, all from @sakun/system.css (MIT, (c) 2022 Sakun Acharige):
+   Chicago 12 and Geneva 9 are recreations by Giles Booth; ChicagoFLF is a
+   Chicago outline face; Monaco. Nothing here is fetched at runtime — the
+   four woff2 files ship with the site.
+
+   Geometry taken from System 7: a 20px title bar with pinstripes that stop
+   around the title, close box at the left, zoom box at the right, a 1px
+   black window border, dialogs with a hard 2px shadow, and dotted keyboard
+   focus.
    ========================================================================= */
 
+/* --- the fonts ----------------------------------------------------------- */
+
+@font-face {
+  font-family: 'Chicago 12';
+  src: url('../assets/fonts/ChiKareGo2.woff2') format('woff2');
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Geneva 9';
+  src: url('../assets/fonts/FindersKeepers.woff2') format('woff2');
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Chicago FLF';
+  src: url('../assets/fonts/ChicagoFLF.woff2') format('woff2');
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Monaco 9';
+  src: url('../assets/fonts/monaco.woff2') format('woff2');
+  font-display: swap;
+}
+
+/* --- tokens -------------------------------------------------------------- */
+
 :root {
-  color-scheme: dark;
+  color-scheme: light;
 
-  --bg: #07080b;
-  --bg-soft: #101319;
-  --panel: #12161d;
-  --line: #242a35;
-  --line-soft: #1a1f28;
-  --fg: #e7eaf0;
-  --fg-dim: #99a2b0;
-  --fg-faint: #68707e;
+  /* one bit */
+  --ink: #000;
+  --paper: #fff;
 
-  /* The primaries. Three colours nothing else can be mixed from, plus a green
-     for the one place a "fine" signal is needed. Everything decorative on this
-     site is one of these four. */
-  --red: #ff3b47;
-  --yellow: #ffd23f;
-  --blue: #4d8dff;
-  --green: #35d67a;
+  /* the two greys the machine could draw, as tiles: 50% and 25% dither.
+     `background-image` over the paper ground, so they invert with the themes
+     because the ink in them does. */
+  --p-50: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='2' height='2'><rect width='1' height='1' fill='black'/><rect x='1' y='1' width='1' height='1' fill='black'/></svg>");
+  --p-25: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='2' height='2'><rect width='1' height='1' fill='black'/></svg>");
+  /* the tint behind text (list stripes, table heads): 25% ink under black
+     letters is a texture, not a legibility problem */
+  --p-tint: var(--p-25);
 
-  --accent: var(--yellow);
-  --accent-dim: #7d6a24;
-  --warn: var(--yellow);
-  --link: var(--blue);
-  /* the ink that reads on top of --accent (a chip, a hover fill) */
-  --on-accent: #07080b;
+  /* the Apple menu's logo, as a mask (the colour comes from the rainbow) */
+  --apple: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 9 11'><path d='M5 0h2v1H5zM4 1h2v1H4zM4 2h1v1H4zM1 3h3v1H1zM5 3h3v1H5zM0 4h9v1H0zM0 5h7v2H0zM0 7h9v2H0zM1 9h7v1H1zM2 10h2v1H2zM5 10h2v1H5z'/></svg>");
 
-  /* one gradient, reused by the title, the rules and the chips, so the palette
-     cannot drift between them */
-  --grad: linear-gradient(
-    100deg,
-    var(--red),
-    var(--yellow) 34%,
-    var(--blue) 68%,
-    var(--red)
-  );
+  /* a 16px document icon for list rows, one ink only */
+  --icon-doc: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 14'><path d='M1 0h7l3 3v11H1z' fill='none' stroke='black' stroke-width='1'/><path d='M8 0v3h3' fill='none' stroke='black' stroke-width='1'/><path d='M3 6h6v1H3zM3 8h6v1H3zM3 10h4v1H3z' fill='black'/></svg>");
 
-  /* the gradient's colours, carried as low-alpha washes */
-  --wash-1: rgba(255, 59, 71, 0.07);
-  --wash-2: rgba(77, 141, 255, 0.075);
-  --wash-3: rgba(255, 210, 63, 0.05);
-  --wash-4: rgba(53, 214, 122, 0.045);
-  --grain: 0.05;
+  /* the classic hard shadow */
+  --shadow: 2px 2px 0 var(--ink);
 
-  --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
-    "Liberation Mono", "DejaVu Sans Mono", "ascii.rest mono", monospace;
-  /* the display face: bold, geometric, and already on the machine */
-  --display: "Inter Tight", Inter, system-ui, -apple-system, "Segoe UI",
-    Roboto, "Helvetica Neue", Arial, sans-serif;
+  /* chrome is Chicago, labels are Geneva, the prose is Monaco */
+  --font-chrome: 'Chicago 12', 'Chicago FLF', 'Geneva', system-ui, sans-serif;
+  --font-display: 'Chicago FLF', 'Chicago 12', system-ui, sans-serif;
+  --font-ui: 'Geneva 9', Geneva, 'Verdana', system-ui, sans-serif;
+  --font-body: 'Monaco 9', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 
   --measure: 74ch;
   --wide: 96rem;
-  --radius: 4px;
+  --radius: 6px;
+
+  /* aliases, so a stray var() in a template still resolves to ink */
+  --bg: var(--paper);
+  --bg-soft: var(--paper);
+  --panel: var(--paper);
+  --line: var(--ink);
+  --line-soft: var(--ink);
+  --fg: var(--ink);
+  --fg-dim: var(--ink);
+  --fg-faint: var(--ink);
+  --accent: var(--ink);
+  --accent-dim: var(--ink);
+  --warn: var(--ink);
+  --link: var(--ink);
+  --on-accent: var(--paper);
 }
 
-:root[data-theme='light'] {
-  color-scheme: light;
-  --bg: #fdfcf7;
-  --bg-soft: #f4f1e9;
-  --panel: #f8f6f0;
-  --line: #e2ddd0;
-  --line-soft: #ece8dd;
-  --fg: #14161a;
-  --fg-dim: #565d68;
-  --fg-faint: #8b9199;
-
-  /* the same four hues, darkened until they clear contrast on paper */
-  --red: #d81f2d;
-  --yellow: #b06a00;
-  --blue: #0b57d0;
-  --green: #0f7a45;
-
-  --accent: var(--red);
-  --accent-dim: #e3a2a2;
-  --warn: #8a5a00;
-  --link: var(--blue);
-  --on-accent: #fdfcf7;
-
-  --wash-1: rgba(216, 31, 45, 0.055);
-  --wash-2: rgba(11, 87, 208, 0.05);
-  --wash-3: rgba(176, 106, 0, 0.045);
-  --wash-4: rgba(15, 122, 69, 0.04);
-  --grain: 0.07;
+/* inverted video: white ink on black paper */
+:root[data-theme='invert'] {
+  color-scheme: dark;
+  --ink: #fff;
+  --paper: #000;
+  --p-50: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='2' height='2'><rect width='1' height='1' fill='white'/><rect x='1' y='1' width='1' height='1' fill='white'/></svg>");
+  --p-25: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='2' height='2'><rect width='1' height='1' fill='white'/></svg>");
+  /* inverted video flips the relationship: white dots behind white letters do
+     not tint a row, they shred it — so the same tint is drawn at half the
+     density (a 4x4 tile, two dots), where it still reads as a grey band */
+  --p-tint: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='4' height='4'><rect width='1' height='1' fill='white'/><rect x='2' y='2' width='1' height='1' fill='white'/></svg>");
+  --icon-doc: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 14'><path d='M1 0h7l3 3v11H1z' fill='none' stroke='white' stroke-width='1'/><path d='M8 0v3h3' fill='none' stroke='white' stroke-width='1'/><path d='M3 6h6v1H3zM3 8h6v1H3zM3 10h4v1H3z' fill='white'/></svg>");
 }
+
+/* --- base ---------------------------------------------------------------- */
 
 *, *::before, *::after { box-sizing: border-box; }
 
 html {
-  background: var(--bg);
+  background: var(--paper);
   scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
 }
 
-body {
-  margin: 0;
-  min-height: 100vh;
-  color: var(--fg);
-  font-family: var(--mono);
-  font-size: 15px;
-  line-height: 1.75;
-  -webkit-font-smoothing: antialiased;
-  text-rendering: optimizeLegibility;
-}
-
-/* --- the grain gradient -------------------------------------------------- *
- * Two fixed layers behind everything: the washes, then the grain. The ground
- * colour stays on <html>, which is what a reader actually sees, so the theme
- * is measurable there. */
-
-body::before,
-body::after {
+/* the desktop: a fixed 50% dither over the paper ground, so every page is a
+   window sitting on a patterned screen */
+body::before {
   content: "";
   position: fixed;
   inset: 0;
   z-index: -1;
   pointer-events: none;
+  background-image: var(--p-50);
 }
 
-body::before {
-  background-image:
-    radial-gradient(60% 55% at 12% 8%, var(--wash-1) 0%, transparent 70%),
-    radial-gradient(50% 50% at 88% 18%, var(--wash-2) 0%, transparent 72%),
-    radial-gradient(55% 60% at 78% 92%, var(--wash-3) 0%, transparent 74%),
-    radial-gradient(45% 45% at 25% 78%, var(--wash-4) 0%, transparent 76%);
-  background-repeat: no-repeat;
-  background-size: 100% 100%;
-  animation: wash-drift 68s ease-in-out infinite alternate;
+body {
+  margin: 0;
+  min-height: 100vh;
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 13px;
+  line-height: 1.75;
 }
 
-@keyframes wash-drift {
-  0%   { background-position: 0 0, 0 0, 0 0, 0 0; }
-  50%  { background-position: 2% -1%, -2% 2%, 1% -2%, -1% 1%; }
-  100% { background-position: -1% 2%, 2% -1%, -2% 1%, 1% -2%; }
-}
+::selection { background: var(--ink); color: var(--paper); }
 
-/* the grain: inline SVG turbulence, stepped so it flickers like film */
-body::after {
-  opacity: var(--grain);
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='g'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/></filter><rect width='140' height='140' filter='url(%23g)'/></svg>");
-  animation: grain-shift 0.7s steps(6, end) infinite;
+a {
+  color: var(--ink);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
 }
-
-@keyframes grain-shift {
-  from { background-position: 0 0; }
-  to   { background-position: 140px 140px; }
+/* the Mac highlight: hovering a link selects it */
+a:hover { background: var(--ink); color: var(--paper); text-decoration: none; }
+a:focus-visible,
+button:focus-visible,
+summary:focus-visible {
+  outline: 1px dotted var(--ink);
+  outline-offset: 2px;
 }
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
-  body::before, body::after { animation: none !important; }
   * { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
 }
-
-a { color: var(--link); text-decoration: none; text-underline-offset: 3px; }
-a:hover { text-decoration: underline; text-decoration-color: var(--yellow); text-decoration-thickness: 2px; }
 
 /* --- type ---------------------------------------------------------------- */
 
 h1, h2, h3, h4 {
-  font-family: var(--display);
-  line-height: 1.22;
-  font-weight: 800;
-  letter-spacing: -0.025em;
-  margin: 2.2em 0 0.7em;
-  color: var(--fg);
+  font-family: var(--font-display);
+  font-weight: 400;
+  line-height: 1.2;
+  letter-spacing: 0;
+  margin: 1.8em 0 0.6em;
+  color: var(--ink);
 }
-h1 { font-size: 1.85rem; margin-top: 0; letter-spacing: -0.035em; }
-h2 { font-size: 1.3rem; }
-h3 { font-size: 1.05rem; }
-h4 { font-size: 0.95rem; color: var(--fg-dim); }
+h1 { font-size: 1.75rem; margin-top: 0; }
+h2 { font-size: 1.2rem; }
+h3 { font-size: 1.02rem; }
+h4 { font-size: 0.95rem; }
 
-/* a short primary rule under a section title, on the pages that have room */
-h2.no-hash { position: relative; padding-bottom: 0.5rem; }
-h2.no-hash::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  bottom: 0;
-  width: 2.6rem;
-  height: 3px;
-  border-radius: 999px;
-  background: var(--grad);
-  background-size: 300% 100%;
-  animation: hero-sweep 14s linear infinite;
+/* a section header the way a Mac document would rule one off */
+.window-body h2:not(.rail-title):not(.bar-title) {
+  border-bottom: 1px solid var(--ink);
+  padding-bottom: 2px;
 }
 
-p, ul, ol, blockquote, table, pre { margin: 0 0 1.2em; }
-ul, ol { padding-left: 1.3em; }
-li { margin-bottom: 0.3em; }
-li::marker { color: var(--fg-faint); }
+p, ul, ol, blockquote, table, pre { margin: 0 0 1.15em; }
+ul, ol { padding-left: 1.4em; }
+li { margin-bottom: 0.25em; }
+li::marker { color: var(--ink); }
 
-hr {
-  border: 0;
-  border-top: 1px solid var(--line);
-  margin: 2.8em 0;
-}
+hr { border: 0; border-top: 1px solid var(--ink); margin: 2.2em 0; }
 
 blockquote {
-  border-left: 3px solid var(--blue);
-  padding: 0.1em 0 0.1em 1.1em;
-  color: var(--fg-dim);
+  border-left: 3px solid var(--ink);
+  padding: 0.1em 0 0.1em 1em;
 }
 
+/* inline code reads as selected text: inverted, the Mac way */
 code {
-  font-family: var(--mono);
-  font-size: 0.9em;
-  color: var(--fg);
-  background: color-mix(in srgb, var(--blue) 14%, transparent);
-  border-radius: 3px;
-  padding: 0.08em 0.32em;
+  font-family: var(--font-body);
+  font-size: 0.95em;
+  background: var(--ink);
+  color: var(--paper);
+  padding: 0 0.28em;
 }
 
 pre {
-  background: var(--bg-soft);
-  border: 1px solid var(--line-soft);
-  border-radius: var(--radius);
-  padding: 0.85em 1em;
+  background: var(--paper);
+  border: 1px solid var(--ink);
+  padding: 0.7em 0.9em;
   overflow-x: auto;
-  font-size: 0.85rem;
-  line-height: 1.65;
+  font-size: 12px;
+  line-height: 1.6;
 }
-pre code { background: none; padding: 0; font-size: inherit; }
+pre code { background: none; color: inherit; padding: 0; }
 
 /* the art is not a code block — `font: inherit` is the load-bearing line */
 :where(ascii-art) > pre,
@@ -249,380 +230,558 @@ pre code { background: none; padding: 0; font-size: inherit; }
   line-height: 1.15;
 }
 
-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.86rem;
-}
-th, td {
-  border-bottom: 1px solid var(--line);
-  padding: 0.5em 0.7em 0.5em 0;
-  text-align: left;
-  vertical-align: top;
-}
-th { color: var(--fg-dim); font-weight: 700; border-bottom-color: var(--accent-dim); }
+table { width: 100%; border-collapse: collapse; font-size: 12px; }
+th, td { border: 1px solid var(--ink); padding: 0.35em 0.6em; text-align: left; vertical-align: top; }
+th { background-image: var(--p-tint); font-family: var(--font-chrome); font-weight: 400; }
 
 kbd {
-  border: 1px solid var(--line);
-  border-radius: 3px;
-  padding: 0 0.35em;
-  font-size: 0.85em;
-  background: var(--panel);
+  border: 1px solid var(--ink);
+  padding: 0 0.3em;
+  font-size: 0.9em;
+  background: var(--paper);
 }
 
-::selection { background: color-mix(in srgb, var(--yellow) 38%, transparent); }
-
-/* --- layout ------------------------------------------------------------- */
-
-.wrap {
-  max-width: var(--wide);
-  margin: 0 auto;
-  padding: 0 1.5rem;
+/* the machine's grey: a dither pattern clipped to the glyphs */
+.dim {
+  background-image: var(--p-50);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
-main { padding: 3rem 0 6rem; }
-
-/* A reading column with a rail beside it, the pair centred as a unit so the
-   text sits in the middle of the window rather than hugging the left edge. */
-.note-shell { max-width: 94rem; margin-inline: auto; }
-
-.note-grid {
-  display: grid;
-  grid-template-columns: minmax(0, var(--measure)) minmax(15rem, 21rem);
-  gap: 2rem 4rem;
-  justify-content: center;
-  align-items: start;
-}
-
-.page-grid {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(15rem, 19rem);
-  gap: 2rem 3.5rem;
-  align-items: start;
-  max-width: 94rem;
-  margin-inline: auto;
-}
-.page-grid > .bleed { grid-column: 1 / -1; }
-
-.note-rail {
-  position: sticky;
-  top: 4.5rem;
-  font-size: 0.82rem;
-}
-.page-rail { font-size: 0.82rem; }
-
-.rail-block { margin-bottom: 2rem; }
-.rail-title {
-  font-family: var(--display);
-  font-size: 0.7rem;
-  font-weight: 800;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--blue);
-  margin: 0 0 0.7rem;
-}
-.rail-toc { list-style: none; margin: 0; padding: 0; }
-.rail-toc li { margin-bottom: 0.35rem; line-height: 1.5; }
-.rail-toc a { color: var(--fg-dim); display: block; }
-.rail-toc a:hover { color: var(--yellow); text-decoration: none; }
-.rail-meta {
-  margin: 0;
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 0.35rem 1rem;
-}
-.rail-meta dt { color: var(--fg-faint); }
-.rail-meta dd { margin: 0; color: var(--fg-dim); }
-.rail-tags, .rail-meta dd.rail-tags { display: flex; flex-wrap: wrap; gap: 0.5rem; }
-.rail-links { list-style: none; margin: 0; padding: 0; }
-.rail-links li { margin-bottom: 0.45rem; }
-.rail-links a { color: var(--fg-dim); }
-.rail-links a:hover { color: var(--yellow); }
-
-@media (max-width: 68rem) {
-  .note-grid,
-  .page-grid { grid-template-columns: minmax(0, 1fr); }
-  .note-rail { display: none; }
-  .page-rail { position: static; }
-}
-
-.skip { position: absolute; left: -9999px; }
-.skip:focus {
-  left: 1rem;
-  top: 1rem;
-  background: var(--panel);
-  padding: 0.3em 0.7em;
-  z-index: 20;
-}
-
-/* --- header and footer --------------------------------------------------- */
+/* --- the menu bar -------------------------------------------------------- */
 
 .site-header {
   position: sticky;
   top: 0;
-  z-index: 10;
-  backdrop-filter: blur(10px);
-  background: color-mix(in srgb, var(--bg) 70%, transparent);
-}
-/* the primary stripe: the one piece of colour that is on every page */
-.site-header::after {
-  content: "";
-  position: absolute;
-  inset: 0 0 auto 0;
-  height: 3px;
-  background: var(--grad);
-  background-size: 300% 100%;
-  animation: hero-sweep 26s linear infinite;
+  z-index: 50;
+  background: var(--paper);
+  border-bottom: 1px solid var(--ink);
 }
 .site-header .wrap {
   display: flex;
   align-items: center;
-  gap: 1rem;
-  min-height: 4rem;
-  flex-wrap: wrap;
+  gap: 0;
+  min-height: 0;
+  max-width: none;
+  padding: 0 0.4rem;
+  flex-wrap: nowrap;
 }
-.brand {
-  font-family: var(--display);
-  color: var(--fg);
-  font-weight: 800;
-  letter-spacing: -0.03em;
-  font-size: 1.05rem;
+.menubar-nav {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  margin-left: 0.35rem;
+  min-width: 0;
+  overflow: hidden;
+}
+.menubar-item {
+  font-family: var(--font-chrome);
+  font-size: 13px;
+  line-height: 1;
+  padding: 5px 8px;
+  color: var(--ink);
+  background: none;
+  border: 0;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: default;
+  display: inline-block;
+}
+.menubar-nav a.menubar-item { cursor: pointer; }
+.menubar-item:hover,
+.menubar-item:focus-visible {
+  background: var(--ink);
+  color: var(--paper);
+  text-decoration: none;
+  outline: none;
+}
+.menubar-item[aria-current='page'] {
+  background: var(--ink);
+  color: var(--paper);
+}
+.menubar-right {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+}
+/* the clock: the one thing on the bar that is just there, like the real one */
+.menubar-clock {
+  font-family: var(--font-chrome);
+  font-size: 13px;
+  padding: 5px 8px 5px 10px;
   white-space: nowrap;
 }
-.brand:hover { text-decoration: none; }
-.site-nav {
-  display: flex;
-  gap: 1.1rem;
-  margin-left: auto;
-  flex-wrap: wrap;
-  align-items: baseline;
-}
-.site-nav a { color: var(--fg-dim); }
-.site-nav a:hover { color: var(--yellow); text-decoration: none; }
-.site-nav a[aria-current='page'] {
-  color: var(--red);
-  font-weight: 700;
-  text-decoration: underline;
-  text-decoration-thickness: 2px;
-  text-underline-offset: 5px;
-}
 
-/* The switch reads as a chip in a primary: at 0.78rem of muted grey it was
-   invisible beside the nav, and it is the one control on the page. */
-.theme-toggle {
-  background: color-mix(in srgb, var(--blue) 14%, transparent);
-  border: 1px solid color-mix(in srgb, var(--blue) 55%, transparent);
-  border-radius: 999px;
-  color: var(--blue);
-  font: inherit;
-  font-size: 0.74rem;
-  line-height: 1;
-  padding: 0.32em 0.62em;
+/* the Apple menu — a real menu, with the rainbow logo */
+.apple-menu { position: relative; }
+.apple-menu > summary {
+  list-style: none;
+  padding: 4px 9px 2px;
   cursor: pointer;
-  transition: background 0.18s ease, color 0.18s ease, border-color 0.18s ease;
+  display: block;
 }
-.theme-toggle:hover {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: var(--on-accent);
+.apple-menu > summary::-webkit-details-marker { display: none; }
+.apple-menu > summary:hover,
+.apple-menu[open] > summary { background: var(--ink); }
+.apple {
+  display: block;
+  width: 15px;
+  height: 18px;
+  background: linear-gradient(
+    to bottom,
+    #61bb46 0 16.667%,
+    #fdb827 0 33.333%,
+    #f5821f 0 50%,
+    #e03a3e 0 66.667%,
+    #963d97 0 83.333%,
+    #009ddc 0 100%
+  );
+  -webkit-mask-image: var(--apple);
+  mask-image: var(--apple);
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
 }
-
-.site-footer {
-  color: var(--fg-faint);
-  font-size: 0.78rem;
-  padding: 2rem 0 3rem;
-  line-height: 1.9;
+.menu {
+  position: absolute;
+  left: 0;
+  top: 100%;
+  z-index: 60;
+  min-width: 15rem;
+  margin: 0;
+  padding: 2px 0;
+  list-style: none;
+  background: var(--paper);
+  border: 1px solid var(--ink);
+  box-shadow: var(--shadow);
 }
-.site-footer a { color: var(--fg-dim); }
-.site-footer a:hover { color: var(--yellow); }
-.site-footer .footer-grid {
-  display: flex;
-  gap: 2rem;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  border-top: 2px solid transparent;
-  border-image: var(--grad) 1;
-  padding-top: 1.5rem;
+.menu li { margin: 0; }
+.menu a {
+  display: block;
+  padding: 3px 16px;
+  font-family: var(--font-chrome);
+  font-size: 13px;
+  line-height: 1.5;
+  text-decoration: none;
+  white-space: nowrap;
 }
+.menu a:hover,
+.menu a:focus-visible { background: var(--ink); color: var(--paper); text-decoration: none; outline: none; }
+.menu .sep { border-top: 1px dotted var(--ink); margin-top: 2px; padding-top: 2px; }
 
-/* --- hero ---------------------------------------------------------------- */
+/* --- windows ------------------------------------------------------------- */
 
-.hero { padding: 1rem 0 1.6rem; }
+.window {
+  background: var(--paper);
+  border: 1px solid var(--ink);
+}
+.title-bar {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 4px;
+  height: 22px;
+  padding: 0 3px;
+  background-image: repeating-linear-gradient(
+    to bottom,
+    var(--ink) 0 1px,
+    transparent 1px 2px
+  );
+}
+.title-bar--inactive { background-image: none; }
+.title {
+  font-family: var(--font-chrome);
+  font-size: 13px;
+  line-height: 1.4;
+  background: var(--paper);
+  padding: 0 6px;
+  margin: 0 auto;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: center;
+}
+.title-bar--inactive .title { background: none; }
 
-/* The front page is a title, not a screenshot of a terminal. Big, bold, in the
-   primaries, with a glow that breathes. The animation is three CSS-only parts:
-   the gradient sweeping through the letters, a blurred halo behind them, and a
-   very slow scale. All of it stops for a reader who asked for less motion. */
-.hero-title {
+.close-box,
+.zoom-box {
   position: relative;
-  isolation: isolate;
-  margin: 0 0 1.1rem;
-  font-family: var(--display);
-  font-size: clamp(2.1rem, 10vw, 7.6rem);
-  font-weight: 900;
-  line-height: 0.94;
-  letter-spacing: -0.055em;
-  color: var(--fg);
-  overflow-wrap: break-word;
+  width: 13px;
+  height: 11px;
+  border: 1px solid var(--ink);
+  background: var(--paper);
+  display: block;
 }
-
-/* the halo: three primary blooms, blurred past recognition into light */
-.hero-title::before {
+.close-box:hover, .close-box:focus-visible, .zoom-box:hover { background: var(--paper); outline: none; }
+.close-box::after {
   content: "";
   position: absolute;
-  inset: -22% 0 -26% 0;
-  z-index: -1;
-  border-radius: 50%;
-  filter: blur(42px);
-  opacity: 0.6;
-  background:
-    radial-gradient(34% 58% at 20% 50%, color-mix(in srgb, var(--red) 60%, transparent), transparent 72%),
-    radial-gradient(30% 54% at 50% 44%, color-mix(in srgb, var(--yellow) 55%, transparent), transparent 72%),
-    radial-gradient(36% 60% at 80% 56%, color-mix(in srgb, var(--blue) 60%, transparent), transparent 72%);
-  animation: hero-halo 9s ease-in-out infinite alternate;
+  inset: 1px;
+  opacity: 0;
+  background-image:
+    linear-gradient(45deg, transparent 42%, var(--ink) 42% 58%, transparent 58%),
+    linear-gradient(-45deg, transparent 42%, var(--ink) 42% 58%, transparent 58%);
+}
+.close-box:hover::after,
+.close-box:focus-visible::after { opacity: 1; }
+.zoom-box::after {
+  content: "";
+  position: absolute;
+  inset: 1px;
+  border: 1px solid var(--ink);
 }
 
-.hero-word { display: inline-block; }
+.window-body { padding: 1.1rem 1.35rem 1.4rem; }
+.window-body--flush { padding: 0; }
+.window-shadow { box-shadow: var(--shadow); }
 
-@supports (background-clip: text) or (-webkit-background-clip: text) {
-  .hero-word {
-    background-image: var(--grad);
-    background-size: 300% 100%;
-    background-position: 0% 50%;
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-    -webkit-text-fill-color: transparent;
-    filter: drop-shadow(0 0 0.16em color-mix(in srgb, var(--blue) 55%, transparent))
-      drop-shadow(0 0 0.36em color-mix(in srgb, var(--red) 35%, transparent));
-    animation: hero-sweep 13s linear infinite, hero-glow 6s ease-in-out infinite alternate;
-  }
+/* --- buttons and dialogs ------------------------------------------------- */
+
+.btn {
+  display: inline-block;
+  font-family: var(--font-chrome);
+  font-size: 13px;
+  line-height: 1.5;
+  padding: 2px 14px 3px;
+  color: var(--ink);
+  background: var(--paper);
+  border: 1px solid var(--ink);
+  border-radius: var(--radius);
+  box-shadow: inset 0 0 0 1px var(--paper);
+  text-decoration: none;
+  cursor: pointer;
+}
+.btn:hover,
+.btn:focus-visible {
+  background: var(--ink);
+  color: var(--paper);
+  text-decoration: none;
+  outline: none;
+}
+.btn-default {
+  box-shadow: inset 0 0 0 1px var(--paper), 0 0 0 2px var(--paper), 0 0 0 3px var(--ink);
+  margin: 0 3px;
 }
 
-@keyframes hero-sweep {
-  from { background-position: 0% 50%; }
-  to   { background-position: 300% 50%; }
+.dialog { box-shadow: var(--shadow); }
+.dialog-body { padding: 1.2rem 1.3rem 1.2rem; }
+.dialog-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.9rem;
+  padding: 0 1.3rem 1.2rem;
 }
 
-@keyframes hero-glow {
-  from {
-    filter: drop-shadow(0 0 0.14em color-mix(in srgb, var(--blue) 55%, transparent))
-      drop-shadow(0 0 0.3em color-mix(in srgb, var(--red) 30%, transparent));
-  }
-  to {
-    filter: drop-shadow(0 0 0.2em color-mix(in srgb, var(--yellow) 65%, transparent))
-      drop-shadow(0 0 0.5em color-mix(in srgb, var(--blue) 45%, transparent));
-  }
+/* --- scrollbars: a dithered track with a bordered thumb ------------------ */
+
+::-webkit-scrollbar { width: 16px; height: 16px; background: var(--paper); }
+::-webkit-scrollbar-track {
+  background-color: var(--paper);
+  background-image:
+    linear-gradient(45deg, var(--ink) 25%, transparent 25%, transparent 75%, var(--ink) 75%),
+    linear-gradient(45deg, var(--ink) 25%, transparent 25%, transparent 75%, var(--ink) 75%);
+  background-size: 2px 2px;
+  background-position: 0 0, 1px 1px;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--paper);
+  border: 1px solid var(--ink);
+}
+::-webkit-scrollbar-corner { background: var(--paper); }
+/* the arrow boxes: paper squares with an ink triangle, drawn with conic
+   gradients (0deg is up, so the wedge that points up is centred on 0deg) */
+::-webkit-scrollbar-button:vertical:decrement,
+::-webkit-scrollbar-button:vertical:increment {
+  display: block;
+  height: 15px;
+  background-color: var(--paper);
+  border: 1px solid var(--ink);
+}
+::-webkit-scrollbar-button:vertical:decrement {
+  background-image: conic-gradient(from 315deg at 50% 62%, var(--ink) 0 90deg, transparent 90deg);
+  background-size: 7px 7px;
+  background-position: center;
+  background-repeat: no-repeat;
+  margin-bottom: 1px;
+}
+::-webkit-scrollbar-button:vertical:increment {
+  background-image: conic-gradient(from 135deg at 50% 38%, var(--ink) 0 90deg, transparent 90deg);
+  background-size: 7px 7px;
+  background-position: center;
+  background-repeat: no-repeat;
+  margin-top: 1px;
+}
+::-webkit-scrollbar-button:horizontal:decrement,
+::-webkit-scrollbar-button:horizontal:increment {
+  display: block;
+  width: 15px;
+  background-color: var(--paper);
+  border: 1px solid var(--ink);
+}
+::-webkit-scrollbar-button:horizontal:decrement {
+  background-image: conic-gradient(from 225deg at 62% 50%, var(--ink) 0 90deg, transparent 90deg);
+  background-size: 7px 7px;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+::-webkit-scrollbar-button:horizontal:increment {
+  background-image: conic-gradient(from 45deg at 38% 50%, var(--ink) 0 90deg, transparent 90deg);
+  background-size: 7px 7px;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
-@keyframes hero-halo {
-  from { opacity: 0.45; transform: scale(0.98) translateY(0.02em); }
-  to   { opacity: 0.75; transform: scale(1.03) translateY(-0.02em); }
+/* --- layout -------------------------------------------------------------- */
+
+.wrap {
+  max-width: var(--wide);
+  margin: 0 auto;
+  padding: 0 1.25rem;
 }
 
-/* the rule under the title: the same gradient, moving much more slowly */
-.hero-rule {
-  height: 5px;
-  width: min(24rem, 62%);
-  margin: 0 0 1.5rem;
-  border-radius: 999px;
-  background: var(--grad);
-  background-size: 300% 100%;
-  animation: hero-sweep 22s linear infinite;
+main { padding: 1.4rem 0 4rem; }
+
+.skip {
+  position: absolute;
+  left: -9999px;
+}
+.skip:focus {
+  left: 0.5rem;
+  top: 0.35rem;
+  z-index: 70;
+  background: var(--paper);
+  border: 1px solid var(--ink);
+  padding: 0.2em 0.7em;
+  font-family: var(--font-chrome);
+  font-size: 13px;
 }
 
-.hero .prompt {
-  color: var(--fg-faint);
-  font-size: 0.78rem;
-  letter-spacing: 0.02em;
-  margin: 0 0 0.8rem;
-}
-.hero .prompt .prompt-mark { color: var(--yellow); font-weight: 700; }
-.hero .lede { max-width: 58ch; color: var(--fg-dim); font-size: 1rem; }
-
-@media (prefers-reduced-motion: reduce) {
-  .hero-word,
-  .hero-title::before,
-  .hero-rule,
-  h2.no-hash::after {
-    animation: none !important;
-  }
-  .hero-word { background-position: 38% 50%; }
-}
-
-/* --- lists --------------------------------------------------------------- */
-
-.note-list { list-style: none; padding: 0; margin: 0 0 1.5rem; }
-.note-item {
-  padding: 1.15rem 0;
+/* the desktop on the front page: windows on the left, icons down the right */
+.desktop {
+  position: relative;
   display: grid;
-  grid-template-columns: 7rem 1fr;
-  gap: 0.2rem 1.5rem;
+  grid-template-columns: minmax(0, 1fr) 9.5rem;
+  gap: 1.5rem;
+  align-items: start;
 }
-.note-item time {
-  color: var(--fg-faint);
-  font-size: 0.76rem;
-  padding-top: 0.35rem;
+.desktop-windows { display: grid; gap: 1.6rem; min-width: 0; }
+.desktop-icons {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.85rem;
+  padding-top: 0.2rem;
+}
+.icon {
+  display: grid;
+  justify-items: center;
+  gap: 3px;
+  width: 100%;
+  padding: 2px;
+  text-decoration: none;
+  text-align: center;
+}
+.icon:hover { background: none; text-decoration: none; }
+.icon svg { display: block; }
+.icon-label {
+  font-family: var(--font-ui);
+  font-size: 11px;
+  line-height: 1.4;
+  background: var(--paper);
+  padding: 0 3px;
+  max-width: 100%;
+}
+.icon:hover .icon-label,
+.icon:focus-visible .icon-label { background: var(--ink); color: var(--paper); }
+
+/* draggable windows: the transform is the position, so the layout never
+   reflows; only switched on when there is a fine pointer and motion is fine */
+.window[data-draggable] .title-bar { cursor: move; touch-action: none; }
+.icon[data-draggable] { cursor: move; touch-action: none; }
+.window[data-draggable] { will-change: transform; }
+
+/* a Finder window: the header row and the striped list */
+.finder-head,
+.finder-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 11rem 6.5rem 3.5rem;
+  gap: 0.9rem;
+  align-items: baseline;
+}
+.finder-head {
+  font-family: var(--font-chrome);
+  font-size: 12px;
+  padding: 4px 1.35rem;
+  border-bottom: 1px solid var(--ink);
+  background-image: var(--p-tint);
+}
+.finder-head span:last-child, .finder-row > :last-child { text-align: right; }
+.finder-list { list-style: none; margin: 0; padding: 0; }
+.finder-row {
+  padding: 7px 1.35rem 8px;
+  border-bottom: 1px dotted var(--ink);
+}
+.finder-list > li:nth-child(even) { background-image: var(--p-tint); }
+.finder-name {
+  display: flex;
+  gap: 0.55rem;
+  min-width: 0;
+}
+.finder-name-main { min-width: 0; }
+.finder-name::before {
+  content: "";
+  flex: 0 0 12px;
+  width: 12px;
+  height: 14px;
+  margin-top: 0.35em;
+  background-image: var(--icon-doc);
+  background-repeat: no-repeat;
+  background-size: contain;
+}
+.finder-name h3 {
+  font-family: var(--font-body);
+  font-size: 13px;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.finder-name h3 a { text-decoration: none; }
+.finder-name h3 a:hover { background: var(--ink); color: var(--paper); }
+.finder-desc {
+  margin: 0.15em 0 0;
+  font-size: 11.5px;
+  line-height: 1.6;
+}
+.finder-time,
+.finder-min {
+  font-family: var(--font-ui);
+  font-size: 11.5px;
   white-space: nowrap;
 }
-.note-item h3 { margin: 0 0 0.3rem; font-size: 1.05rem; }
-.note-item h3::before { content: none; }
-.note-item h3 a { color: var(--fg); }
-.note-item h3 a:hover { color: var(--yellow); text-decoration: none; }
-.note-item .desc { color: var(--fg-dim); font-size: 0.88rem; margin: 0 0 0.55rem; }
-.note-item .meta { font-size: 0.75rem; color: var(--fg-faint); display: flex; gap: 1rem; flex-wrap: wrap; }
+.finder-time { grid-column: 3; }
+.finder-min { grid-column: 4; }
 
-/* the date column carries the primary rotation, so a list of notes reads as a
-   colour rhythm instead of a wall of grey */
-.note-list .note-item:nth-child(3n + 1) time { color: color-mix(in srgb, var(--red) 60%, var(--fg-faint)); }
-.note-list .note-item:nth-child(3n + 2) time { color: color-mix(in srgb, var(--yellow) 60%, var(--fg-faint)); }
-.note-list .note-item:nth-child(3n) time { color: color-mix(in srgb, var(--blue) 60%, var(--fg-faint)); }
-@media (max-width: 34rem) {
-  .note-item { grid-template-columns: 1fr; }
-  .note-item time { padding-top: 0; }
+/* --- a note: a document window beside an Info window --------------------- */
+
+.note-desktop {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 17rem;
+  gap: 1.5rem;
+  align-items: start;
+  max-width: 96rem;
+  margin-inline: auto;
+}
+.note-shell { min-width: 0; }
+.note-rail {
+  position: sticky;
+  top: 3.4rem;
+  font-size: 12px;
+}
+.page-rail { font-size: 12px; }
+.rail-block { margin-bottom: 1.4rem; }
+.rail-block:last-child { margin-bottom: 0; }
+.rail-title {
+  font-family: var(--font-chrome);
+  font-size: 12px;
+  font-weight: 400;
+  letter-spacing: 0;
+  margin: 0 0 0.5rem;
+  padding-bottom: 2px;
+  border-bottom: 1px solid var(--ink);
+}
+.rail-toc { list-style: none; margin: 0; padding: 0; }
+.rail-toc li { margin-bottom: 0.3rem; line-height: 1.5; }
+.rail-toc a { text-decoration: none; }
+.rail-meta { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 0.25rem 0.9rem; }
+.rail-meta dt { font-family: var(--font-ui); font-size: 11.5px; }
+.rail-meta dd { margin: 0; }
+.rail-tags { display: flex; flex-wrap: wrap; gap: 0.45rem; }
+.rail-links { list-style: none; margin: 0; padding: 0; }
+.rail-links li { margin-bottom: 0.35rem; line-height: 1.5; }
+.rail-links a { text-decoration: none; }
+
+/* legacy grids, still used by a couple of pages */
+.note-grid,
+.page-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(14rem, 19rem);
+  gap: 1.5rem;
+  align-items: start;
+  max-width: 96rem;
+  margin-inline: auto;
+}
+.page-grid > .bleed { grid-column: 1 / -1; }
+.page-rail { position: sticky; top: 3.4rem; }
+
+@media (max-width: 60rem) {
+  .desktop,
+  .note-desktop,
+  .note-grid,
+  .page-grid { grid-template-columns: minmax(0, 1fr); }
+  .desktop-icons { flex-direction: row; flex-wrap: wrap; justify-content: center; gap: 0.6rem; }
+  .icon { width: 5.5rem; }
+  .note-rail, .page-rail { position: static; }
+  .finder-head, .finder-row { grid-template-columns: minmax(0, 1fr) 6.5rem 3.5rem; }
+  .finder-tags { display: none; }
 }
 
-/* --- tags: words, not pills ---------------------------------------------- */
+/* --- prose and note chrome ---------------------------------------------- */
 
-.tags { display: flex; gap: 0.9rem; flex-wrap: wrap; padding: 0; list-style: none; margin: 0; }
-.tag { font-size: 0.78rem; color: var(--fg-dim); }
-.tag::before { content: "#"; color: var(--red); }
-.tag:hover { color: var(--yellow); text-decoration: none; }
+.post-header { max-width: var(--measure); }
+.post-header h1 { font-size: 1.9rem; }
+.post-header .meta {
+  font-family: var(--font-ui);
+  font-size: 11.5px;
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin: 0.5rem 0 0.9rem;
+}
+.prose { max-width: var(--measure); }
+.prose > p:first-of-type { font-size: 13px; }
+.post-hero { margin: 1.4rem 0; max-width: 64rem; }
+.post-footer {
+  max-width: var(--measure);
+  margin-top: 2.4rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--ink);
+  font-size: 12px;
+}
+.lede { max-width: 62ch; }
 
-.tag-cloud { display: flex; gap: 0.75rem 1.1rem; flex-wrap: wrap; list-style: none; padding: 0; margin: 0; }
-.tag-cloud li { display: flex; gap: 0.35rem; align-items: baseline; }
-.tag-cloud .count { color: var(--fg-faint); font-size: 0.7rem; }
+/* --- the art: a matted, one-bit picture ---------------------------------- */
 
-/* the hash marks walk the primaries, so the tag cloud is a colour field
-   without any one tag shouting */
-.tag-cloud li:nth-child(3n + 1) .tag::before { color: var(--red); }
-.tag-cloud li:nth-child(3n + 2) .tag::before { color: var(--yellow); }
-.tag-cloud li:nth-child(3n) .tag::before { color: var(--blue); }
-
-/* --- art ----------------------------------------------------------------- */
-
-.ascii-figure { margin: 1.75rem 0 2rem; }
+.ascii-figure { margin: 1.4rem 0 1.6rem; }
 .ascii-figure figcaption {
-  color: var(--fg-faint);
-  font-size: 0.72rem;
-  padding-top: 0.6rem;
+  font-family: var(--font-ui);
+  font-size: 11.5px;
+  padding-top: 0.45rem;
   display: flex;
   gap: 1rem;
   justify-content: space-between;
   flex-wrap: wrap;
 }
-.ascii-figure figcaption .piece-name { color: var(--fg-dim); }
 
 /* a generated piece: the <pre> is the picture for readers without JavaScript
-   or without motion; the canvas takes over, in colour, when it mounts */
+   or without motion; the canvas takes over when it mounts. Rendered to ink
+   with a grayscale filter — a colour picture would be the only thing on the
+   site that is not one bit. */
 .art-stage {
   position: relative;
   display: block;
   container-type: inline-size;
-  background: var(--bg-soft);
-  border-radius: var(--radius);
+  background: var(--paper);
+  border: 1px solid var(--ink);
   overflow: hidden;
 }
+.art-canvas { display: block; width: 100%; filter: grayscale(1) contrast(1.3); }
+:root[data-theme='invert'] .art-canvas { filter: grayscale(1) contrast(1.3) invert(1); }
 .art-still {
   margin: 0;
   /* fill exactly the box the canvas will take: `cols / (rows * cell)` wide,
@@ -631,12 +790,11 @@ main { padding: 3rem 0 6rem; }
   line-height: 1.2;
   white-space: pre;
   letter-spacing: 0;
-  color: var(--fg);
+  color: var(--ink);
   text-align: left;
   overflow: hidden;
 }
 .art-still[hidden], .art-canvas[hidden] { display: none; }
-.art-canvas { display: block; width: 100%; }
 
 .ascii-stage {
   /* block, not flex: a flex container with justify-content:center clips an
@@ -654,11 +812,54 @@ main { padding: 3rem 0 6rem; }
   line-height: 1.1;
   text-align: left;
 }
-.ascii-stage ascii-art > pre { color: var(--fg); }
+.ascii-stage ascii-art > pre { color: var(--ink); }
 .ascii-stage ascii-art canvas { display: block; max-width: 100%; height: auto; }
 
 .bare-art { margin: 0.5rem 0 1.25rem; }
 .bare-art ascii-art { font-size: clamp(6px, 1.4vw, 16px); }
+
+.grid-2 {
+  display: grid;
+  /* wide enough for a 132-column piece at the gallery size; auto-fit would
+     otherwise make three columns on a laptop and clip the art */
+  grid-template-columns: repeat(auto-fit, minmax(30rem, 1fr));
+  gap: 1.5rem;
+}
+.art-grid ascii-art { font-size: clamp(5px, 0.9vw, 10px); }
+
+/* --- tags, stats, callouts ---------------------------------------------- */
+
+.tags { display: flex; gap: 0.8rem; flex-wrap: wrap; padding: 0; list-style: none; margin: 0; }
+.tag { font-family: var(--font-ui); font-size: 11.5px; text-decoration: none; }
+.tag::before { content: "#"; }
+.tag:hover { background: var(--ink); color: var(--paper); }
+.tag-cloud { display: flex; gap: 0.5rem 0.9rem; flex-wrap: wrap; list-style: none; padding: 0; margin: 0; }
+.tag-cloud li { display: flex; gap: 0.3rem; align-items: baseline; }
+.tag-cloud .count { font-family: var(--font-ui); font-size: 11px; }
+.tag-cloud .count::before { content: "("; }
+.tag-cloud .count::after { content: ")"; }
+
+.callout {
+  border: 1px solid var(--ink);
+  box-shadow: inset 0 0 0 1px var(--paper), inset 4px 0 0 0 var(--ink);
+  padding: 0.5em 0.8em 0.5em 1.1em;
+  margin: 1.5rem 0;
+  font-size: 12.5px;
+}
+
+.stat-row {
+  display: flex;
+  gap: 2rem;
+  flex-wrap: wrap;
+  margin: 1.4rem 0;
+  padding: 0;
+  list-style: none;
+}
+.stat-row li { padding: 0; }
+.stat-row b { display: block; font-family: var(--font-display); font-size: 1.25rem; line-height: 1.3; }
+.stat-row span { font-family: var(--font-ui); font-size: 11px; }
+
+.filters { display: flex; gap: 1.2rem; flex-wrap: wrap; align-items: baseline; margin-bottom: 1.2rem; }
 
 .sr-only {
   position: absolute;
@@ -672,60 +873,79 @@ main { padding: 3rem 0 6rem; }
   border: 0;
 }
 
-/* --- prose and note chrome ----------------------------------------------- */
+/* --- the wordmark -------------------------------------------------------- */
 
-.post-hero { margin: 2rem auto; max-width: 64rem; }
-.prose { max-width: var(--measure); }
-.prose > p:first-of-type { font-size: 1.02rem; }
+.wordmark {
+  font-family: var(--font-display);
+  font-size: clamp(1.9rem, 5vw, 3.3rem);
+  line-height: 1;
+  margin: 0.2rem 0 0.5rem;
+}
+.prompt {
+  font-family: var(--font-ui);
+  font-size: 11.5px;
+  margin: 0 0 0.7rem;
+}
+.prompt .prompt-mark::before { content: "$ "; }
 
-.post-header { max-width: var(--measure); }
-.post-header h1 { font-size: 2.1rem; font-weight: 900; }
-.post-header .meta {
-  color: var(--fg-faint);
-  font-size: 0.76rem;
+/* --- footer -------------------------------------------------------------- */
+
+.site-footer {
+  font-family: var(--font-ui);
+  font-size: 11.5px;
+  padding: 1.4rem 0 2.5rem;
+  line-height: 1.8;
+}
+.site-footer .footer-grid {
   display: flex;
-  gap: 1.1rem;
-  flex-wrap: wrap;
-  margin-bottom: 1.1rem;
-}
-.post-header .lede { color: var(--fg-dim); }
-.post-footer {
-  max-width: var(--measure);
-  margin-top: 3rem;
-  padding-top: 1.2rem;
-  border-top: 1px solid var(--line-soft);
-  color: var(--fg-dim);
-  font-size: 0.84rem;
-}
-
-.grid-2 {
-  display: grid;
-  /* wide enough for a 132-column piece at the gallery size; auto-fit would
-     otherwise make three columns on a laptop and clip the art */
-  grid-template-columns: repeat(auto-fit, minmax(30rem, 1fr));
   gap: 2rem;
-}
-.art-grid ascii-art { font-size: clamp(5px, 0.9vw, 10px); }
-
-.callout {
-  border-left: 2px solid var(--warn);
-  padding: 0.1em 0 0.1em 1.1em;
-  margin: 1.75rem 0;
-  color: var(--fg-dim);
-  font-size: 0.92rem;
-}
-.callout strong { color: var(--fg); }
-
-.stat-row {
-  display: flex;
-  gap: 2.5rem;
   flex-wrap: wrap;
-  margin: 1.75rem 0;
-  padding: 0;
-  list-style: none;
+  justify-content: space-between;
+  padding: 0.9rem 1.1rem 1rem;
 }
-.stat-row li { padding: 0; }
-.stat-row b { display: block; font-size: 1.25rem; color: var(--fg); line-height: 1.3; }
-.stat-row span { color: var(--fg-faint); font-size: 0.72rem; letter-spacing: 0.04em; text-transform: uppercase; }
+.site-footer a { text-decoration: none; }
 
-.filters { display: flex; gap: 1.5rem; flex-wrap: wrap; align-items: baseline; margin-bottom: 1.5rem; }
+@media (max-width: 40rem) {
+  .menubar-item { padding: 5px 6px; font-size: 12px; }
+  .menubar-clock { display: none; }
+  .window-body { padding: 1rem 0.95rem 1.15rem; }
+  .finder-head, .finder-row { grid-template-columns: minmax(0, 1fr) 5.5rem; }
+  .finder-min { display: none; }
+}
+
+/* --- Finder rows: padding that bleeds to the window edge ----------------- */
+
+:root { --body-pad: 1.35rem; }
+
+.finder-head,
+.finder-row {
+  padding-left: var(--body-pad);
+  padding-right: var(--body-pad);
+  margin-left: calc(-1 * var(--body-pad));
+  margin-right: calc(-1 * var(--body-pad));
+}
+.finder-head { padding-top: 4px; padding-bottom: 4px; }
+.finder-row { padding-top: 7px; padding-bottom: 8px; }
+.finder-row--two { grid-template-columns: minmax(0, 1fr) 8rem; }
+.finder-time, .finder-min { text-align: right; }
+
+/* the Info window beside a note: sticky, and it scrolls inside itself —
+   which is where the site's scrollbar dressing shows itself most */
+.info-window {
+  position: sticky;
+  top: 3.4rem;
+  align-self: start;
+  max-height: calc(100vh - 4.6rem);
+  display: flex;
+  flex-direction: column;
+}
+.info-window .window-body { overflow-y: auto; }
+.note-rail { position: static; }
+
+/* an alert dialog: the message is the heading, at dialog size */
+.dialog-body h1 { font-size: 1.02rem; margin: 0 0 0.7em; }
+
+@media (max-width: 40rem) {
+  :root { --body-pad: 0.95rem; }
+  .info-window { position: static; max-height: none; }
+}

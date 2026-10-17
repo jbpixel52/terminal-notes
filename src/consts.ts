@@ -18,9 +18,9 @@ export const SITE = {
 } as const;
 
 export const NAV = [
-  { href: '/', label: 'index' },
-  { href: '/notes/', label: 'notes' },
-  { href: '/tags/', label: 'tags' },
-  { href: '/about/', label: 'about' },
-  { href: '/colophon/', label: 'colophon' },
+  { href: '/', label: 'Index' },
+  { href: '/notes/', label: 'Notes' },
+  { href: '/tags/', label: 'Tags' },
+  { href: '/about/', label: 'About' },
+  { href: '/colophon/', label: 'Colophon' },
 ] as const;

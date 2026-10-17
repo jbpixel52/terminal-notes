@@ -1,24 +1,27 @@
 ---
+/**
+ * <NoteItem> — one row of a Finder list view: a document icon, the note's
+ * name (and its one-line description, which a Finder would put in the
+ * comments column), then tags, date and reading time.
+ */
 import { url } from '../lib/url';
 import type { Note } from '../lib/site';
 import { formatDate, minutes } from '../lib/site';
 
 interface Props { note: Note; showGlyph?: boolean; }
-const { note, showGlyph = true } = Astro.props;
-const { title, description, pubDate, tags, ascii } = note.data;
+const { note } = Astro.props;
+const { title, description, pubDate, tags } = note.data;
 ---
-<li class="note-item">
-  <time datetime={pubDate.toISOString()}>{formatDate(pubDate)}</time>
-  <div>
-    <h3><a href={url(`/notes/${note.id}/`)}>{title}</a></h3>
-    <p class="desc">{description}</p>
-    <div class="meta">
-      <span>{minutes(note)} min</span>
-      {tags.length > 0 && (
-        <span class="tags">
-          {tags.map((tag) => <a class="tag" href={url(`/tags/${tag}/`)}>{tag}</a>)}
-        </span>
-      )}
-    </div>
-  </div>
+<li class="finder-row">
+  <span class="finder-name">
+    <span class="finder-name-main">
+      <h3><a href={url(`/notes/${note.id}/`)}>{title}</a></h3>
+      <p class="finder-desc">{description}</p>
+    </span>
+  </span>
+  <span class="finder-tags tags">
+    {tags.map((tag) => <a class="tag" href={url(`/tags/${tag}/`)}>{tag}</a>)}
+  </span>
+  <time class="finder-time" datetime={pubDate.toISOString()}>{formatDate(pubDate)}</time>
+  <span class="finder-min">{minutes(note)} min</span>
 </li>

@@ -2,6 +2,7 @@
 import { url } from '../lib/url';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import NoteItem from '../components/NoteItem.astro';
+import MacIcon from '../components/MacIcon.astro';
 import { getNotes, tagIndex } from '../lib/site';
 import { SITE } from '../consts';
 
@@ -10,58 +11,185 @@ const tags = tagIndex(notes);
 const recent = notes.slice(0, 7);
 const pictures = notes.map((n) => n.data.ascii.art ?? n.data.ascii.piece);
 const pictures_ = new Set(pictures).size;
+
+// the desktop's icons: the sections of the site, in Finder clothes
+const icons = [
+  { href: '/notes/', label: 'Notes', kind: 'folder' },
+  { href: '/tags/', label: 'Tags', kind: 'folder' },
+  { href: '/art/', label: 'Art', kind: 'doc' },
+  { href: '/about/', label: 'Read Me', kind: 'doc' },
+  { href: '/colophon/', label: 'System', kind: 'disk' },
+  { href: '/404/', label: 'Trash', kind: 'trash' },
+] as const;
 ---
 <BaseLayout>
-  <div class="page-grid">
-    <section class="hero bleed">
-      <h1 class="hero-title"><span class="hero-word">Terminal Notes</span></h1>
-      <div class="hero-rule" aria-hidden="true"></div>
-      <p class="prompt" aria-hidden="true">
-        <span class="prompt-mark">$</span> ls -1 --recent ~/notes
-      </p>
-      <p class="lede">{SITE.description}</p>
-    </section>
+  <div class="desktop" data-desktop>
+    <div class="desktop-windows">
+      <section class="window window-shadow" data-window aria-labelledby="desk-title">
+        <div class="title-bar title-bar--active">
+          <span class="close-box" aria-hidden="true"></span>
+          <span class="title" id="desk-title">Terminal Notes</span>
+          <span class="zoom-box" aria-hidden="true"></span>
+        </div>
+        <div class="window-body">
+          <h1 class="wordmark">Terminal Notes</h1>
+          <p class="prompt" aria-hidden="true"><span class="prompt-mark"></span>ls -1 --recent ~/notes</p>
+          <p class="lede">{SITE.description}</p>
 
-    <div class="page-main">
-      <h2 class="no-hash">latest</h2>
-      <ul class="note-list">
-        {recent.map((note) => <NoteItem note={note} />)}
-      </ul>
-      <p><a href={url('/notes/')}>all {notes.length} notes →</a></p>
+          <h2>latest</h2>
+          <ul class="finder-list">
+            {recent.map((note) => <NoteItem note={note} />)}
+          </ul>
+          <p><a class="btn" href={url('/notes/')}>All {notes.length} notes</a></p>
+        </div>
+      </section>
+
+      <section class="window window-shadow" data-window aria-labelledby="notebook-title">
+        <div class="title-bar title-bar--inactive">
+          <span class="close-box" aria-hidden="true"></span>
+          <span class="title" id="notebook-title">Notebook</span>
+          <span class="zoom-box" aria-hidden="true"></span>
+        </div>
+        <div class="window-body">
+          <h2 class="rail-title">this notebook</h2>
+          <dl class="rail-meta">
+            <dt>notes</dt><dd>{notes.length}</dd>
+            <dt>tags</dt><dd>{tags.size}</dd>
+            <dt>pictures</dt><dd>{pictures_} ascii pieces</dd>
+            <dt>built</dt><dd>static, no trackers</dd>
+          </dl>
+
+          <h2 class="rail-title">tags</h2>
+          <ul class="tag-cloud">
+            {[...tags].map(([tag, list]) => (
+              <li>
+                <a class="tag" href={url(`/tags/${tag}/`)}>{tag}</a>{' '}
+                <span class="count">{list.length}</span>
+              </li>
+            ))}
+          </ul>
+
+          <h2 class="rail-title">elsewhere</h2>
+          <ul class="rail-links">
+            <li><a href={url('/notes/')}>every note</a></li>
+            <li><a href={url('/art/')}>the art</a></li>
+            <li><a href={url('/rss.xml')}>rss</a></li>
+          </ul>
+        </div>
+      </section>
     </div>
 
-    <aside class="page-rail" aria-label="Notebook index">
-      <div class="rail-block">
-        <h2 class="rail-title">this notebook</h2>
-        <dl class="rail-meta">
-          <dt>notes</dt><dd>{notes.length}</dd>
-          <dt>tags</dt><dd>{tags.size}</dd>
-          <dt>pictures</dt><dd>{pictures_} ascii pieces</dd>
-          <dt>built</dt><dd>static, no trackers</dd>
-        </dl>
-      </div>
-
-      <nav class="rail-block" aria-label="Tags">
-        <h2 class="rail-title">tags</h2>
-        <ul class="tag-cloud">
-          {[...tags].map(([tag, list]) => (
-            <li>
-              <a class="tag" href={url(`/tags/${tag}/`)}>{tag}</a>{' '}
-              <span class="count">{list.length}</span>
-            </li>
-          ))}
-        </ul>
-      </nav>
-
-      <nav class="rail-block" aria-label="Elsewhere">
-        <h2 class="rail-title">elsewhere</h2>
-        <ul class="rail-links">
-          <li><a href={url('/notes/')}>every note</a></li>
-          <li><a href={url('/art/')}>the art</a></li>
-          <li><a href={url('/about/')}>about</a></li>
-          <li><a href={url('/colophon/')}>colophon</a></li>
-        </ul>
-      </nav>
-    </aside>
+    <nav class="desktop-icons" aria-label="Desktop">
+      {icons.map((icon) => (
+        <a class="icon" href={url(icon.href)}>
+          <MacIcon kind={icon.kind} />
+          <span class="icon-label">{icon.label}</span>
+        </a>
+      ))}
+    </nav>
   </div>
 </BaseLayout>
+
+<script>
+  /**
+   * The desktop: windows and icons can be dragged around, like a real one.
+   *
+   * Three rules keep it from being a toy that breaks things:
+   *   - it is switched on only for a fine pointer, so a touch reader gets the
+   *     plain stacked layout and never a stuck window;
+   *   - the drag is a transform, so the layout never reflows and nothing can
+   *     be dragged into a broken position — the box is clamped to the desk;
+   *   - a drag that ends on a link does not follow the link (Escape puts
+   *     everything back).
+   */
+  const desktop = document.querySelector<HTMLElement>('[data-desktop]');
+  const fine = window.matchMedia('(pointer: fine)').matches;
+
+  if (desktop && fine) {
+    let top = 1;
+    const placed = new WeakMap<HTMLElement, { x: number; y: number }>();
+    const travelled = new WeakMap<HTMLElement, number>();
+
+    const place = (el: HTMLElement, x: number, y: number) => {
+      placed.set(el, { x, y });
+      el.style.transform = x || y ? `translate(${x}px, ${y}px)` : '';
+    };
+
+    const makeDraggable = (el: HTMLElement, handle: HTMLElement) => {
+      el.setAttribute('data-draggable', '');
+      let startX = 0, startY = 0, baseX = 0, baseY = 0;
+      let limitX: [number, number] = [0, 0];
+      let limitY: [number, number] = [0, 0];
+      let active = false;
+
+      handle.addEventListener('pointerdown', (e) => {
+        if (e.button !== 0) return;
+        const desk = desktop.getBoundingClientRect();
+        const rect = el.getBoundingClientRect();
+        const at = placed.get(el) ?? { x: 0, y: 0 };
+        // where this element would sit with no transform at all
+        const originLeft = rect.left - at.x;
+        const originTop = rect.top - at.y;
+        const spanX = (lo: number, hi: number): [number, number] =>
+          lo <= hi ? [lo, hi] : [0, 0];
+        limitX = spanX(
+          Math.min(0, desk.left - originLeft),
+          Math.max(0, desk.right - (originLeft + rect.width)),
+        );
+        limitY = spanX(
+          Math.min(0, desk.top - originTop),
+          Math.max(0, desk.bottom - (originTop + rect.height)),
+        );
+        startX = e.clientX;
+        startY = e.clientY;
+        baseX = at.x;
+        baseY = at.y;
+        active = true;
+        travelled.set(el, 0);
+        el.style.zIndex = String(++top);
+        el.style.userSelect = 'none';
+        handle.setPointerCapture(e.pointerId);
+      });
+
+      handle.addEventListener('pointermove', (e) => {
+        if (!active) return;
+        const dx = e.clientX - startX;
+        const dy = e.clientY - startY;
+        travelled.set(el, Math.max(travelled.get(el) ?? 0, Math.abs(dx) + Math.abs(dy)));
+        const clamp = (v: number, [lo, hi]: [number, number]) => Math.min(Math.max(v, lo), hi);
+        place(el, clamp(baseX + dx, limitX), clamp(baseY + dy, limitY));
+      });
+
+      const end = (e: PointerEvent) => {
+        if (!active) return;
+        active = false;
+        el.style.userSelect = '';
+        try { handle.releasePointerCapture(e.pointerId); } catch {}
+      };
+      handle.addEventListener('pointerup', end);
+      handle.addEventListener('pointercancel', end);
+
+      // a drag is not a click
+      handle.addEventListener('click', (e) => {
+        if ((travelled.get(el) ?? 0) > 4) {
+          e.preventDefault();
+          e.stopPropagation();
+          travelled.set(el, 0);
+        }
+      });
+    };
+
+    for (const win of desktop.querySelectorAll<HTMLElement>('[data-window]')) {
+      makeDraggable(win, win.querySelector<HTMLElement>('.title-bar') ?? win);
+    }
+    for (const icon of desktop.querySelectorAll<HTMLElement>('.icon')) {
+      makeDraggable(icon, icon);
+    }
+
+    // Escape: put the desktop back the way it was
+    document.addEventListener('keydown', (e) => {
+      if (e.key !== 'Escape') return;
+      for (const el of desktop.querySelectorAll<HTMLElement>('[data-draggable]')) place(el, 0, 0);
+    });
+  }
+</script>

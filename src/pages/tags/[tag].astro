@@ -15,10 +15,20 @@ export async function getStaticPaths() {
 const { tag, list } = Astro.props;
 ---
 <BaseLayout title={`#${tag}`} description={`Notes tagged ${tag}.`}>
-  <h1>#{tag}</h1>
-  <p class="lede">{list.length} note{list.length === 1 ? '' : 's'} tagged <code>{tag}</code>.</p>
-  <ul class="note-list">
-    {list.map((note) => <NoteItem note={note} />)}
-  </ul>
-  <p><a href={url('/tags/')}>← all tags</a></p>
+  <div class="window window-shadow">
+    <div class="title-bar title-bar--active">
+      <span class="close-box" aria-hidden="true"></span>
+      <h1 class="title">#{tag} — {list.length} note{list.length === 1 ? '' : 's'}</h1>
+      <span class="zoom-box" aria-hidden="true"></span>
+    </div>
+    <div class="window-body">
+      <div class="finder-head" aria-hidden="true">
+        <span>Name</span><span>Tags</span><span>Date</span><span>Time</span>
+      </div>
+      <ul class="finder-list">
+        {list.map((note) => <NoteItem note={note} />)}
+      </ul>
+      <p><a class="btn" href={url('/tags/')}>All tags</a></p>
+    </div>
+  </div>
 </BaseLayout>

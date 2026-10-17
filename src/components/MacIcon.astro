@@ -1,0 +1,58 @@
+---
+/**
+ * <MacIcon> — the desktop's pixel icons, drawn as one-bit art: an ink
+ * silhouette with a paper inset, so the outline costs nothing and the icon
+ * flips with the theme. viewBox is a 16x16 grid and `size` is CSS pixels.
+ */
+interface Props { kind: 'doc' | 'folder' | 'disk' | 'trash'; size?: number; class?: string; }
+const { kind, size = 32, class: className } = Astro.props;
+---
+
+<svg
+  class:list={['mac-icon', className]}
+  width={size}
+  height={size}
+  viewBox="0 0 16 16"
+  shape-rendering="crispEdges"
+  aria-hidden="true"
+  focusable="false"
+>
+  {kind === 'doc' && (
+    <g>
+      <path class="mi-ink" d="M3 1h7l4 4v10H3z" />
+      <path class="mi-paper" d="M4 2h5.5L12.5 5.5V14H4z" />
+      <path class="mi-ink" d="M10 2h1v1h1v1h1v1h-3z" />
+      <path class="mi-ink" d="M5.5 7h6v1h-6zM5.5 9h6v1h-6zM5.5 11h4v1h-4z" />
+    </g>
+  )}
+  {kind === 'folder' && (
+    <g>
+      <path class="mi-ink" d="M1 2h6v2h8v11H1z" />
+      <path class="mi-paper" d="M2 3h4v1.5H2z" />
+      <path class="mi-paper" d="M2 5h12v9H2z" />
+    </g>
+  )}
+  {kind === 'disk' && (
+    <g>
+      <path class="mi-ink" d="M1 2h14v12H1z" />
+      <path class="mi-paper" d="M2 3h12v10H2z" />
+      <path class="mi-ink" d="M4 6h8v1H4z" />
+      <path class="mi-ink" d="M11 9h1v1h-1z" />
+      <path class="mi-ink" d="M4 9h5v1H4z" />
+    </g>
+  )}
+  {kind === 'trash' && (
+    <g>
+      <path class="mi-ink" d="M2 3h12v1.5H2z" />
+      <path class="mi-ink" d="M6 1h4v1.5H6z" />
+      <path class="mi-ink" d="M3 5.5h10l-1 9.5H4z" />
+      <path class="mi-paper" d="M4.5 6.5h7l-.8 7.5H5.3z" />
+      <path class="mi-ink" d="M6 8h1v5H6zM8 8h1v5H8zM10 8h1v5h-1z" />
+    </g>
+  )}
+</svg>
+
+<style>
+  .mac-icon .mi-ink { fill: var(--ink); }
+  .mac-icon .mi-paper { fill: var(--paper); }
+</style>

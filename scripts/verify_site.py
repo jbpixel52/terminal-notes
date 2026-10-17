@@ -220,9 +220,10 @@ def main() -> int:
 
     with sync_playwright() as p:
         browser = p.chromium.launch()
-        # dark, explicitly: the site's own default, not the headless default
+        # light, explicitly: the site's own default is paper (a System 7
+        # desktop), not the headless browser's default
         ctx = browser.new_context(
-            viewport={"width": 1600, "height": 1000}, color_scheme="dark"
+            viewport={"width": 1600, "height": 1000}, color_scheme="light"
         )
         page = ctx.new_page()
 
@@ -371,27 +372,28 @@ def main() -> int:
         page.wait_for_timeout(400)
         page.screenshot(path=str(out / "note-bottom.png"), full_page=False)
 
-        # --- theme toggle (order-independent: read, flip, read) -------------
-        # the ground colour is on <html> (the body is transparent so the grain
-        # gradient can sit behind it), so measure there and on the washes
+        # --- the Invert switch (order-independent: read, flip, read) --------
+        # the ground is on <html>, and the two design tokens are what the whole
+        # page is made of, so measure all three
         page.goto(args.base_url + "/", wait_until="networkidle")
         probe = (
-            "() => [getComputedStyle(document.documentElement).getPropertyValue('--bg').trim(),"
+            "() => [getComputedStyle(document.documentElement).getPropertyValue('--paper').trim(),"
             " getComputedStyle(document.documentElement).backgroundColor,"
-            " getComputedStyle(document.documentElement).getPropertyValue('--wash-1').trim(),"
-            " document.documentElement.dataset.theme || 'dark']"
+            " getComputedStyle(document.documentElement).getPropertyValue('--ink').trim(),"
+            " document.documentElement.dataset.theme || 'paper']"
         )
         r0 = page.evaluate(probe)
+        check(r0[3] == "paper", "the default desktop is paper", str(r0))
         page.click("[data-theme-toggle]")
         page.wait_for_timeout(250)
         r1 = page.evaluate(probe)
         check(
             r1[3] != r0[3] and r1[0] != r0[0] and r1[1] != r0[1] and r1[2] != r0[2],
-            "theme toggle switches palette",
+            "the Invert switch flips ink and paper",
             f"{r0} -> {r1}",
         )
         page.reload(wait_until="networkidle")
-        after_theme = page.evaluate("() => document.documentElement.dataset.theme || 'dark'")
+        after_theme = page.evaluate("() => document.documentElement.dataset.theme || 'paper'")
         check(
             after_theme == r1[3],
             "theme choice survives a reload",
@@ -399,50 +401,81 @@ def main() -> int:
         )
         page.screenshot(path=str(out / "home-toggled.png"), full_page=False)
 
-        # --- what a reader with a light OS preference gets -------------------
-        light_ctx = browser.new_context(
-            viewport={"width": 1280, "height": 900}, color_scheme="light"
-        )
-        lp = light_ctx.new_page()
-        lp.goto(args.base_url + "/", wait_until="networkidle")
-        lp.wait_for_timeout(900)
-        light_bg = lp.evaluate("() => getComputedStyle(document.body).backgroundColor")
-        check(
-            lp.evaluate("() => document.documentElement.dataset.theme") == "light",
-            "light OS preference gets the light palette",
-            f"bg={light_bg}",
-        )
-        lp.screenshot(path=str(out / "home-os-light.png"), full_page=False)
-        light_ctx.close()
+        # --- what a reader's own system preference gets ----------------------
+        # paper is the default either way; a dark OS preference starts the
+        # reader on inverted video, which is what the Mac's switch did
+        for name, scheme, expected in (
+            ("light", "light", "paper"),
+            ("dark", "dark", "invert"),
+        ):
+            os_ctx = browser.new_context(
+                viewport={"width": 1280, "height": 900}, color_scheme=scheme
+            )
+            op = os_ctx.new_page()
+            op.goto(args.base_url + "/", wait_until="networkidle")
+            op.wait_for_timeout(700)
+            theme = op.evaluate("() => document.documentElement.dataset.theme || 'paper'")
+            bg = op.evaluate("() => getComputedStyle(document.documentElement).backgroundColor")
+            check(
+                theme == expected,
+                f"a {name} OS preference starts on the {expected} desktop",
+                f"theme={theme} bg={bg}",
+            )
+            op.screenshot(path=str(out / f"home-os-{name}.png"), full_page=False)
+            os_ctx.close()
 
-        # --- the grain gradient is actually painted --------------------------
-        # two fixed layers behind the content: washes and grain. A stylesheet
-        # that failed to load, or a pseudo-element that never rendered, would
-        # leave both empty.
+        # --- the desktop is actually dressed ---------------------------------
+        # the pattern layer behind every page, the menu bar, a window with its
+        # border, and the Apple in the menu bar
         page.goto(args.base_url + "/", wait_until="networkidle")
-        layers = page.evaluate(
+        desk = page.evaluate(
             """() => {
-              const w = getComputedStyle(document.body, '::before');
-              const g = getComputedStyle(document.body, '::after');
+              const layer = getComputedStyle(document.body, '::before');
+              const bar = document.querySelector('.site-header');
+              const win = document.querySelector('.window');
+              const title = document.querySelector('.title-bar');
               return {
-                washes: (w.backgroundImage.match(/radial-gradient/g) || []).length,
-                washAnim: w.animationName,
-                grain: g.backgroundImage.includes('svg') && g.backgroundImage.length > 200,
-                grainOpacity: parseFloat(g.opacity),
-                grainAnim: g.animationName,
-                position: w.position,
+                layerPosition: layer.position,
+                layerPattern: layer.backgroundImage.includes('svg'),
+                layering: getComputedStyle(bar || document.body).position,
+                menubar: !!bar,
+                window: !!win,
+                windowBorder: win ? getComputedStyle(win).borderTopWidth : null,
+                pinstripes: title ? getComputedStyle(title).backgroundImage.includes('gradient') : false,
               };
             }"""
         )
         check(
-            layers["washes"] >= 4 and layers["grain"] and layers["grainOpacity"] > 0.01,
-            "grain gradient layers are painted",
-            str(layers),
+            desk["layerPosition"] == "fixed" and desk["layerPattern"],
+            "the desktop dither is painted behind the page",
+            str(desk),
         )
         check(
-            layers["position"] == "fixed",
-            "the gradient sits behind the page and does not scroll",
-            str(layers),
+            desk["menubar"] and desk["window"] and desk["pinstripes"],
+            "a menu bar and a pinstriped window are on the page",
+            str(desk),
+        )
+        check(
+            desk["windowBorder"] == "1px",
+            "windows carry the 1px ink border",
+            str(desk),
+        )
+
+        apple = page.evaluate(
+            """() => {
+              const a = document.querySelector('.apple');
+              if (!a) return null;
+              const s = getComputedStyle(a);
+              return {
+                mask: (s.maskImage || s.webkitMaskImage || ''),
+                fill: s.backgroundImage.slice(0, 60),
+              };
+            }"""
+        )
+        check(
+            apple is not None and "svg" in (apple["mask"] or "") and "gradient" in apple["fill"],
+            "the menu bar carries the Apple logo",
+            str(apple),
         )
 
         browser.close()

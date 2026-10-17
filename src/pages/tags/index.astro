@@ -7,20 +7,34 @@ const notes = await getNotes();
 const tags = tagIndex(notes);
 ---
 <BaseLayout title="Tags" description="Every tag in the notebook, with counts.">
-  <h1>tags</h1>
-  <p class="lede">Counts are notes per tag; a note can carry more than one.</p>
-  <ul class="note-list">
-    {[...tags].map(([tag, list]) => (
-      <li class="note-item">
-        <time>{list.length} note{list.length === 1 ? '' : 's'}</time>
-        <div>
-          <h3><a href={url(`/tags/${tag}/`)}>#{tag}</a></h3>
-          <p class="desc">
-            {list.slice(0, 4).map((n) => n.data.title).join(' · ')}
-            {list.length > 4 ? ` … +${list.length - 4}` : ''}
-          </p>
-        </div>
-      </li>
-    ))}
-  </ul>
+  <div class="window window-shadow">
+    <div class="title-bar title-bar--active">
+      <span class="close-box" aria-hidden="true"></span>
+      <h1 class="title">Tags — {tags.size} items</h1>
+      <span class="zoom-box" aria-hidden="true"></span>
+    </div>
+    <div class="window-body">
+      <p class="lede">Counts are notes per tag; a note can carry more than one.</p>
+
+      <div class="finder-head finder-row--two" aria-hidden="true">
+        <span>Tag</span><span>Notes</span>
+      </div>
+      <ul class="finder-list">
+        {[...tags].map(([tag, list]) => (
+          <li class="finder-row finder-row--two">
+            <span class="finder-name">
+              <span class="finder-name-main">
+                <h3><a href={url(`/tags/${tag}/`)}>#{tag}</a></h3>
+                <p class="finder-desc">
+                  {list.slice(0, 4).map((n) => n.data.title).join(' · ')}
+                  {list.length > 4 ? ` … +${list.length - 4}` : ''}
+                </p>
+              </span>
+            </span>
+            <span class="finder-min">{list.length} note{list.length === 1 ? '' : 's'}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </div>
 </BaseLayout>
