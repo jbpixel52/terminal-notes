@@ -142,6 +142,8 @@ def main() -> int:
         check(s == 200, f"GET a note page -> {s}")
         check('<pre class="art-still"' in note, "the note page carries the ascii picture as text (no-JS path)")
         check('class="art-canvas"' in note, "the note page carries the canvas for the animated path")
+        check('class="desk-art"' in note, "the note hangs its picture on the desktop, behind the window")
+        check("post-hero" not in note, "no art figure sits at the top of the post")
         check(
             'ascii.rest' in note or 'source image' in note,
             "the note page credits the picture's source",

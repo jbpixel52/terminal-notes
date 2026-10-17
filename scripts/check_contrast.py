@@ -82,7 +82,8 @@ CHECKS: list[tuple[str, str, str]] = [
     ("prose list item", "@note", ".prose li"),
     ("inline code", "@note", ".prose :not(pre) > code"),
     ("code block", "@note", ".prose pre code"),
-    ("figure caption", "@note", ".ascii-figure figcaption"),
+    ("figure caption", "@gallery", ".ascii-figure figcaption"),
+    ("art credit", "@note", ".post-credit"),
     ("prose link", "@link", ".prose a"),
     ("blockquote text", "@quote", ".prose blockquote"),
     ("table cell", "@table", ".prose td"),
@@ -125,7 +126,13 @@ NOTE = NOTES[0][0]
 NOTE_TABLE = first_note_with("<table") or NOTE
 NOTE_LINK = first_note_with('<a href="/terminal-notes/notes/')   # None if unused
 NOTE_QUOTE = first_note_with("<blockquote")                      # None if unused
-_NOTES = {"@note": NOTE, "@link": NOTE_LINK, "@quote": NOTE_QUOTE, "@table": NOTE_TABLE}
+_NOTES = {
+    "@note": NOTE,
+    "@link": NOTE_LINK,
+    "@quote": NOTE_QUOTE,
+    "@table": NOTE_TABLE,
+    "@gallery": "/art/",  # the only page that still frames pictures in figures
+}
 CHECKS = [(label, _NOTES.get(path, path), sel) for label, path, sel in CHECKS]
 
 

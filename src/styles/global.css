@@ -723,7 +723,82 @@ main { padding: 1.5rem 0 4rem; }
 }
 .prose { max-width: var(--measure); }
 .prose > p:first-of-type { font-size: 1.06rem; }
-.post-hero { margin: 1.5rem 0; max-width: 64rem; }
+/* --- the desk picture: a note's art drawn on the desktop itself ------------
+
+   The art is not a figure at the top of the note. It hangs on the desktop
+   behind the window and is blended into it: on the paper desktop the piece is
+   flipped to ink and multiplied, on the inverted desktop the screen is
+   screened — either way its own ground dissolves into the dither and only the
+   marks reach the desk. The desktop pattern is painted into this layer as well
+   as onto body::before, because a blend element cannot see anything outside its
+   own stacking context: without that backdrop the picture's ground would sit
+   on the dither as a panel instead of multiplying into it. */
+
+.desk-art {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  overflow: hidden;
+  background-image: var(--p-desk);
+}
+/* the stage has to be the whole viewport before the runtime measures it: an
+   auto-sized stage collapses to the canvas's intrinsic 300px and the picture
+   mounts at 300px, not at the desk's width */
+.desk-art .art-stage {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  container-type: normal;
+  background: transparent;
+  border: 0;
+  overflow: visible;
+}
+.desk-art .art-canvas,
+.desk-art .art-still,
+.desk-art ascii-art {
+  width: auto;
+  height: auto;
+  max-width: min(1320px, 94vw);
+  max-height: 88vh;
+  object-fit: contain;
+  /* feathered, so the picture ends in the desk and not at a rectangle */
+  -webkit-mask-image: radial-gradient(115% 115% at 50% 46%, #000 50%, transparent 97%);
+  mask-image: radial-gradient(115% 115% at 50% 46%, #000 50%, transparent 97%);
+}
+.desk-art .art-canvas {
+  /* brightness first, then contrast pivoting on mid-grey: the ground clips
+     back to white (so it multiplies away) while the marks come down to ink */
+  filter: grayscale(1) invert(1) brightness(0.8) contrast(2.4);
+  mix-blend-mode: multiply;
+}
+.desk-art .art-still {
+  font-size: clamp(4px, 0.72vw, 10px);
+  white-space: pre;
+  mix-blend-mode: multiply;
+}
+/* the inverted desktop: keep the screen and screen it — the piece's near-black
+   ground sinks into the dark desk, and brightness lifts only the marks */
+:root[data-theme='invert'] .desk-art .art-canvas {
+  filter: grayscale(1) brightness(1.9);
+  mix-blend-mode: screen;
+}
+:root[data-theme='invert'] .desk-art .art-still {
+  mix-blend-mode: screen;
+}
+/* a catalogue piece is its own animation in its own colour: it sits on the
+   desk as it is rather than pretending to be a photograph */
+.desk-art ascii-art { mix-blend-mode: normal; }
+
+/* the window stops filling the desktop, so the picture shows around it */
+.note-desktop {
+  max-width: none;
+  padding: 2.6rem min(17rem, 16vw) 6rem;
+}
+
 .post-footer {
   max-width: var(--measure);
   margin-top: 2.6rem;
@@ -732,6 +807,9 @@ main { padding: 1.5rem 0 4rem; }
   font-size: 13.5px;
   color: var(--muted);
 }
+.post-footer p { margin: 0; }
+.post-footer p + p { margin-top: 0.45rem; }
+.post-credit { font-size: 12.5px; }
 .lede { max-width: 64ch; font-size: 1.06rem; color: var(--muted); }
 
 /* --- the art: a matted, one-bit picture ---------------------------------- */
@@ -936,6 +1014,7 @@ main { padding: 1.5rem 0 4rem; }
   .note-desktop,
   .note-grid,
   .page-grid { grid-template-columns: minmax(0, 1fr); }
+  .note-desktop { padding: 1.3rem 0.9rem 3rem; }
   .desktop-icons { flex-direction: row; flex-wrap: wrap; justify-content: center; gap: 0.7rem; }
   .icon { width: 6rem; }
   .note-rail, .page-rail { position: static; }

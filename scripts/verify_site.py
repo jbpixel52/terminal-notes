@@ -528,6 +528,67 @@ def main() -> int:
             str(desk["bodyFont"]),
         )
 
+        # --- a note: the picture hangs on the desk, not at the top of the post -
+        # the placement is the design, so measure the placement: a fixed layer
+        # behind the windows, carrying the desktop pattern so its blend has a
+        # backdrop, mounted at the desk's width rather than the canvas's
+        # intrinsic 300px, and blended differently on each desktop
+        note_target = note_routes[0] if note_routes else "/notes/"
+        page.evaluate("() => { try { localStorage.setItem('theme', 'paper'); } catch {} }")
+        page.goto(args.base_url + note_target, wait_until="networkidle")
+        page.wait_for_timeout(1400)
+        desk_pic = page.evaluate(
+            """() => {
+              const layer = document.querySelector('.desk-art');
+              const canvas = layer && layer.querySelector('canvas[data-art]');
+              const cs = layer ? getComputedStyle(layer) : null;
+              const r = canvas ? canvas.getBoundingClientRect() : null;
+              return {
+                present: !!layer,
+                position: cs && cs.position,
+                z: cs ? parseInt(cs.zIndex, 10) : null,
+                dither: cs ? cs.backgroundImage.includes('svg') : false,
+                box: r ? [Math.round(r.width), Math.round(r.height)] : null,
+                blend: canvas ? getComputedStyle(canvas).mixBlendMode : null,
+                figures: document.querySelectorAll('.post-hero, .ascii-figure').length,
+                credit: (document.querySelector('.post-credit') || {}).textContent || '',
+              };
+            }"""
+        )
+        check(
+            desk_pic["present"] and desk_pic["position"] == "fixed" and (desk_pic["z"] or 0) < 0,
+            f"a note's picture is a fixed layer behind the window ({note_target})",
+            str(desk_pic),
+        )
+        check(
+            desk_pic["dither"] and bool(desk_pic["box"]) and desk_pic["box"][0] > 1000,
+            "the picture is drawn on the desk at desk width, over its own dither",
+            str(desk_pic),
+        )
+        check(
+            desk_pic["blend"] == "multiply",
+            "on the paper desktop the picture is multiplied into the desk",
+            str(desk_pic["blend"]),
+        )
+        check(
+            desk_pic["figures"] == 0 and "source image" in desk_pic["credit"],
+            "no art figure at the top of the post, and the art is credited in the note",
+            f"figures={desk_pic['figures']} credit={desk_pic['credit'][:60]!r}",
+        )
+        page.evaluate("() => { try { localStorage.setItem('theme', 'invert'); } catch {} }")
+        page.reload(wait_until="networkidle")
+        page.wait_for_timeout(1400)
+        inverted_blend = page.evaluate(
+            "() => { const c = document.querySelector('.desk-art canvas[data-art]');"
+            " return c ? getComputedStyle(c).mixBlendMode : null; }"
+        )
+        check(
+            inverted_blend == "screen",
+            "on the inverted desktop the picture is screened into the desk",
+            str(inverted_blend),
+        )
+        page.evaluate("() => { try { localStorage.setItem('theme', 'paper'); } catch {} }")
+
         browser.close()
 
     # --- counts must agree with the build -------------------------------

@@ -3,6 +3,7 @@ import { url } from '../lib/url';
 import BaseLayout from './BaseLayout.astro';
 import Art from '../components/Art.astro';
 import Ascii from '../components/Ascii.astro';
+import { getSource } from '../art/sources';
 import { formatDate, minutes, type Note } from '../lib/site';
 
 interface Props {
@@ -16,8 +17,40 @@ const { title, description, pubDate, updatedDate, tags, ascii } = note.data;
 
 // the rail's table of contents: the note's own top-level sections
 const sections = headings.filter((h) => h.depth === 2);
+
+// The picture hangs on the desktop now rather than in the note, so its credit
+// has to live where a reader can find it: read the piece's name the way <Art>
+// does, and the photograph's origin from the generated credit table.
+const pieceModules = import.meta.glob('../art/pieces/*.js');
+let picture: { name: string; note: string; source: ReturnType<typeof getSource> } | null = null;
+if (ascii.art) {
+  const mod = (await pieceModules[`../art/pieces/${ascii.art}.js`]()) as {
+    meta: { name: string; note: string };
+  };
+  // the same fallback the figure used: the frontmatter's caption, else the
+  // piece's own note about the photograph it was decoded from
+  picture = { name: mod.meta.name, note: ascii.caption ?? mod.meta.note, source: getSource(ascii.art) };
+}
 ---
 <BaseLayout title={title} description={description}>
+  {
+    (ascii.art || ascii.piece) && (
+      <div class="desk-art" aria-hidden="true">
+        {ascii.art ? (
+          <Art slug={ascii.art} framed={false} label={`ascii art for “${title}”`} />
+        ) : (
+          <Ascii
+            piece={ascii.piece!}
+            options={ascii.options}
+            fps={ascii.fps}
+            mono={ascii.mono}
+            framed={false}
+            label={`ascii art for “${title}”`}
+          />
+        )}
+      </div>
+    )
+  }
   <article>
     <div class="note-desktop">
       <div class="window window-shadow note-shell">
@@ -41,21 +74,6 @@ const sections = headings.filter((h) => h.depth === 2);
             <p class="lede">{description}</p>
           </header>
 
-          <div class="post-hero">
-            {ascii.art ? (
-              <Art slug={ascii.art} caption={ascii.caption} label={`ascii art for “${title}”`} />
-            ) : (
-              <Ascii
-                piece={ascii.piece!}
-                options={ascii.options}
-                fps={ascii.fps}
-                mono={ascii.mono}
-                caption={ascii.caption ?? title}
-                label={`ascii art for “${title}”`}
-              />
-            )}
-          </div>
-
           <div class="prose">
             <slot />
           </div>
@@ -71,6 +89,33 @@ const sections = headings.filter((h) => h.depth === 2);
               ))}
               . <a href={url('/notes/')}>All notes</a>.
             </p>
+            {picture && (
+              <p class="post-credit">
+                The picture on the desktop is <span class="piece-name">{picture.name}</span>
+                {picture.note ? ` — ${picture.note}` : ''}
+                {picture.source ? (
+                  <>
+                    {' · '}
+                    <a
+                      href={picture.source.page}
+                      rel="noopener noreferrer"
+                      title={`wallhaven ${picture.source.id} · "${picture.source.query}"`}
+                    >
+                      source image ↗
+                    </a>
+                  </>
+                ) : null}
+              </p>
+            )}
+            {!picture && ascii.piece && (
+              <p class="post-credit">
+                The picture on the desktop is <span class="piece-name">{ascii.piece}</span> —{' '}
+                <a href={`https://ascii.rest/${ascii.piece}/`} rel="noopener noreferrer">
+                  ascii.rest
+                </a>
+                .
+              </p>
+            )}
           </footer>
         </div>
       </div>
