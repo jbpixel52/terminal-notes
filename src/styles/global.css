@@ -807,6 +807,13 @@ main { padding: 1.5rem 0 4rem; }
 /* a catalogue piece is its own animation in its own colour: it sits on the
    desk as it is rather than pretending to be a photograph */
 .desk-art ascii-art { mix-blend-mode: normal; }
+/* the picture is drawn on the desk at 80%: opacity applies after the blend, so
+   the marks come through a fifth lighter while the desk keeps its own tone */
+.desk-art .art-canvas,
+.desk-art .art-still,
+.desk-art ascii-art {
+  opacity: 0.8;
+}
 
 /* the window stops filling the desktop, so the picture shows around it */
 .note-desktop {
