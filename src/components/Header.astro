@@ -13,18 +13,7 @@ const isCurrent = (href: string) => {
 
 <header class="site-header">
   <div class="wrap">
-    <details class="apple-menu">
-      <summary aria-label="Apple menu"><span class="apple"></span></summary>
-      <ul class="menu" role="menu">
-        <li><a role="menuitem" href={url('/')}>Home</a></li>
-        <li><a role="menuitem" href={url('/notes/')}>All notes</a></li>
-        <li><a role="menuitem" href={url('/art/')}>The art</a></li>
-        <li class="sep"><a role="menuitem" href={url('/about/')}>About this notebook</a></li>
-        <li><a role="menuitem" href={url('/colophon/')}>Colophon</a></li>
-        <li class="sep"><a role="menuitem" href={url('/rss.xml')}>RSS feed</a></li>
-        <li><a role="menuitem" href={url('/sitemap-index.xml')}>Sitemap</a></li>
-      </ul>
-    </details>
+    <span class="menubar-app">{SITE.title}</span>
     <nav class="menubar-nav" aria-label="Primary">
       {NAV.map((item) => (
         <a class="menubar-item" href={url(item.href)} aria-current={isCurrent(item.href) ? 'page' : undefined}>
@@ -33,6 +22,7 @@ const isCurrent = (href: string) => {
       ))}
     </nav>
     <div class="menubar-right">
+      <a class="menubar-item" href={url('/rss.xml')}>RSS</a>
       <button
         class="menubar-item"
         type="button"
@@ -48,17 +38,6 @@ const isCurrent = (href: string) => {
 </header>
 
 <script>
-  // the Apple menu closes like a menu: a click outside, or Escape
-  const apple = document.querySelector<HTMLDetailsElement>('.apple-menu');
-  if (apple) {
-    document.addEventListener('click', (e) => {
-      if (apple.open && !apple.contains(e.target as Node)) apple.open = false;
-    });
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && apple.open) apple.open = false;
-    });
-  }
-
   // the clock: local time, the way a menu-bar clock reads
   const clock = document.querySelector<HTMLElement>('[data-clock]');
   const tick = () => {

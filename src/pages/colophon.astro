@@ -26,18 +26,26 @@ const tags = new Set(notes.flatMap((n) => n.data.tags));
         <h2>The desktop</h2>
         <p>
           The site is dressed as a System 7 Macintosh: a dithered screen, white windows
-          with pinstriped title bars, close and zoom boxes on every window, and a menu bar
-          with the rainbow Apple at its left. The front page is a Finder desktop — the
-          windows and the icons on it can be dragged around, and <kbd>Esc</kbd> puts them
-          back — and every other page is a document window on the same screen, with an
+          with title bars and close and zoom boxes, and a menu bar that names the
+          application instead of carrying the Apple. The front page is a Finder desktop —
+          the windows and the icons on it can be dragged around, and <kbd>Esc</kbd> puts
+          them back — and every other page is a document window on the same screen, with an
           <b>Info</b> window beside it for the things a rail would normally hold.
         </p>
         <p>
-          It is a one-bit design on purpose: there is one ink and one paper, and every grey
-          on the page is a <b>dither pattern</b> — a 50% or 25% checkerboard at one pixel
-          per cell — because that is how a one-bit screen made grey. The only colour on the
-          site is the Apple in the menu bar, which is the one place System 7 spent it
-          deliberately, on the rainbow logo.
+          The one-bit palette is still what draws the chrome: one ink, one paper, and hard
+          1px borders with a 2px shadow. The <b>dither</b> — a checkerboard at one pixel per
+          cell — now survives only where nothing has to be read through it: the screen
+          behind the windows and the pinstripes of an inactive title bar. Every grey behind
+          type is a flat tint instead, because a checkerboard under 16px letters costs
+          contrast however good it looks from across the room.
+        </p>
+        <p>
+          Colour came back as accents rather than decoration. The active window's title bar
+          is ink blue, and so is the current item in the menu bar, every link, the bar beside
+          each section heading, and the ring on the default button. Tags rotate through five
+          soft hues. The wordmark is a gradient that stays dark enough to read. Each of those
+          pairs is measured on the painted page — see <b>Contrast</b> below.
         </p>
 
         <h2>Inverted video</h2>
@@ -51,15 +59,20 @@ const tags = new Set(notes.flatMap((n) => n.data.tags));
 
         <h2>The type</h2>
         <p>
-          Four faces, all self-hosted, so no font service ever learns that a page was read:
-          <b>Chicago</b> for the chrome — menus, window titles, buttons and headings —
-          <b>Geneva</b> for small labels and captions, <b>Monaco</b> for the prose and the
-          code, because this is a notes site and its voice is monospace, and Chicago again,
-          as an outline face, for the wordmark. Chicago 12 and Geneva 9 are recreations by
-          Giles Booth; all four files come from
+          Everything you read is set in your own system's type: the browser's UI sans for
+          body text and headings at 16px and up, and a system <b>monospace</b> for code,
+          commands and the ascii frames, which have to be monospaced to line up at all.
+          Nothing is fetched from a font service, and no pixel face is asked to carry a
+          paragraph.
+        </p>
+        <p>
+          The exception is the chrome, which is where the Macintosh keeps its voice:
+          <b>Chicago 12</b> — as recreated by Giles Booth, from
           <a href="https://github.com/sakofchit/system.css" rel="noopener noreferrer">system.css</a>
           by <a href="https://github.com/sakofchit" rel="noopener noreferrer">@sakofchit</a>
-          (MIT), the same licence the ascii library is under.
+          (MIT, the same licence the ascii library is under) — draws the menu bar and the
+          window titles, one self-hosted file, preloaded. A dozen characters at 14px is a
+          signature; a page of it was not.
         </p>
 
         <h2>Building</h2>
@@ -124,13 +137,35 @@ const tags = new Set(notes.flatMap((n) => n.data.tags));
           loaded, so an empty list is visible rather than silent.
         </p>
 
+        <h2>Contrast</h2>
+        <p>
+          <code>scripts/check_contrast.py</code> loads the built site in Chromium in both
+          palettes, and for every text style the site actually uses it resolves the
+          effective background — walking up the ancestors to the first thing that paints —
+          then measures the WCAG 2.1 ratio and holds it to <b>4.5:1</b> for body text and
+          <b>3:1</b> for large text. It also fails if the first thing behind any text is a
+          pattern rather than a flat colour, which is the mistake the dither used to make
+          under a Finder row. Gradient text is measured stop by stop. Where the content has
+          no instance of a style — an in-prose link, a blockquote — the check says so
+          instead of passing quietly.
+        </p>
+        <p>
+          Two things worth knowing about measuring contrast on a real page: a colour is only
+          a ratio against whatever is painted behind the glyphs, so the check has to read
+          the page rather than the stylesheet; and <code>background-clip: text</code> leaves
+          <code>color</code> transparent, so those glyphs have to be measured by their
+          gradient stops.
+        </p>
+
         <h2>Verification</h2>
         <p>
           <code>scripts/verify_site.py</code> starts a preview server, walks every route,
           checks for non-200s, missing titles and console errors, asserts that each note page
           actually contains a rendered ascii frame (a <code>&lt;canvas&gt;</code> or a
           <code>&lt;pre&gt;</code> with content, not just an empty container), that the
-          desktop's pattern layer is painted, and that the Invert switch really flips the
+          desktop's pattern layer is painted, that the menu bar names the app and no Apple
+          menu is left in the markup, that the active title bar is the accent colour, that
+          no pixel face is carrying text, and that the Invert switch really flips the
           palette and survives a reload, and it writes screenshots as evidence. A page that
           merely returns 200 is not a page that works.
         </p>

@@ -1,49 +1,31 @@
 /* =========================================================================
-   Terminal Notes — dressed as a System 7 desktop.
+   Terminal Notes — a System 7 desktop you can read.
 
-   A classic Macintosh: a dither-patterned desktop, white windows with
-   pinstriped title bars, a menu bar across the top with the rainbow Apple,
-   Chicago for the chrome, Geneva for the small labels, and Monaco for the
-   prose — this is a notes site, its voice is monospace, and Monaco is the
-   Mac's monospace.
+   The structure is still 1991: a dithered desktop, white windows with title
+   bars, close and zoom boxes, a 1px ink border, a hard 2px shadow, a menu bar
+   across the top. What changed is the voice:
 
-   It is a one-bit design on purpose. There is exactly one ink and one paper,
-   and every grey on the page is a *dither pattern* rather than a colour,
-   because that is how the machine made grey: a 1-bit screen with a 50%
-   checkerboard reads as grey at arm's length. The theme toggle inverts the
-   two (white ink on black paper), which is the Mac's own inverted video.
-
-   Fonts, all from @sakun/system.css (MIT, (c) 2022 Sakun Acharige):
-   Chicago 12 and Geneva 9 are recreations by Giles Booth; ChicagoFLF is a
-   Chicago outline face; Monaco. Nothing here is fetched at runtime — the
-   four woff2 files ship with the site.
-
-   Geometry taken from System 7: a 20px title bar with pinstripes that stop
-   around the title, close box at the left, zoom box at the right, a 1px
-   black window border, dialogs with a hard 2px shadow, and dotted keyboard
-   focus.
+   - Body text is set in the reader's own UI sans (and code in their monospace)
+     at reading sizes. Chicago — the Mac's system font — survives only as
+     chrome: the menu bar and the window titles, where a dozen characters at
+     14px are a signature rather than a wall of type.
+   - Colour comes back as accents, not as a circus: an ink-blue for links, the
+     active window's title bar and the current menu item; a soft tint pair for
+     each of five tag hues; a pale blue dither on the desktop. Every pair below
+     is checked against WCAG 2.1 AA by scripts/check_contrast.py, in both themes.
+   - No text sits on a dither pattern any more. The greys behind type are solid
+     tints (--row-tint, --head-tint), because a checkerboard under 16px letters
+     costs contrast however good it looks at arm's length. The dither is kept
+     where it costs nothing: the desktop itself.
+   - `Invert` in the menu bar still swaps ink and paper, the Mac's inverted
+     video; the accent tokens have light/dark pairs so contrast holds both ways.
    ========================================================================= */
 
-/* --- the fonts ----------------------------------------------------------- */
+/* --- the chrome font ----------------------------------------------------- */
 
 @font-face {
   font-family: 'Chicago 12';
   src: url('../assets/fonts/ChiKareGo2.woff2') format('woff2');
-  font-display: swap;
-}
-@font-face {
-  font-family: 'Geneva 9';
-  src: url('../assets/fonts/FindersKeepers.woff2') format('woff2');
-  font-display: swap;
-}
-@font-face {
-  font-family: 'Chicago FLF';
-  src: url('../assets/fonts/ChicagoFLF.woff2') format('woff2');
-  font-display: swap;
-}
-@font-face {
-  font-family: 'Monaco 9';
-  src: url('../assets/fonts/monaco.woff2') format('woff2');
   font-display: swap;
 }
 
@@ -52,66 +34,89 @@
 :root {
   color-scheme: light;
 
-  /* one bit */
+  /* the one-bit chrome: ink and paper still draw every window */
   --ink: #000;
   --paper: #fff;
 
-  /* the two greys the machine could draw, as tiles: 50% and 25% dither.
-     `background-image` over the paper ground, so they invert with the themes
-     because the ink in them does. */
-  --p-50: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='2' height='2'><rect width='1' height='1' fill='black'/><rect x='1' y='1' width='1' height='1' fill='black'/></svg>");
-  --p-25: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='2' height='2'><rect width='1' height='1' fill='black'/></svg>");
-  /* the tint behind text (list stripes, table heads): 25% ink under black
-     letters is a texture, not a legibility problem */
-  --p-tint: var(--p-25);
+  /* the accents. Each of these carries text somewhere, and each pair is
+     contrast-checked in both themes (see the table in the README). */
+  --accent: #0b57d0;        /* links, active title bar, current menu item */
+  --on-accent: #ffffff;
+  --muted: #4d5567;         /* secondary text: 7.5:1 on paper */
+  --row-tint: #f3f6fb;      /* alternating list rows */
+  --head-tint: #e7eefb;     /* list headers, table headers */
+  --rule: #0b57d0;          /* the bar beside a section heading */
+  --green: #1b6b3a;         /* the shell prompt */
 
-  /* the Apple menu's logo, as a mask (the colour comes from the rainbow) */
-  --apple: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 9 11'><path d='M5 0h2v1H5zM4 1h2v1H4zM4 2h1v1H4zM1 3h3v1H1zM5 3h3v1H5zM0 4h9v1H0zM0 5h7v2H0zM0 7h9v2H0zM1 9h7v1H1zM2 10h2v1H2zM5 10h2v1H5z'/></svg>");
+  /* five tag hues, each a soft ground with a matching ink */
+  --t1-bg: #e8f0fe; --t1-fg: #0b57d0;
+  --t2-bg: #fdecea; --t2-fg: #c62828;
+  --t3-bg: #e7f4ec; --t3-fg: #1b6b3a;
+  --t4-bg: #fdf3dd; --t4-fg: #8a5a00;
+  --t5-bg: #f0ebfb; --t5-fg: #5b3ca8;
 
-  /* a 16px document icon for list rows, one ink only */
-  --icon-doc: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 14'><path d='M1 0h7l3 3v11H1z' fill='none' stroke='black' stroke-width='1'/><path d='M8 0v3h3' fill='none' stroke='black' stroke-width='1'/><path d='M3 6h6v1H3zM3 8h6v1H3zM3 10h4v1H3z' fill='black'/></svg>");
+  /* the wordmark's gradient: dark enough that every stop clears AA on paper */
+  --wm-1: #0b57d0; --wm-2: #5b3ca8; --wm-3: #b3261e;
+  --wm-fallback: #14204a;
+
+  /* the desktop: the one place the dither survives. A tile of pale blue dots
+     at 12.5% — a Mac desktop pattern, tinted, with nothing readable on it. */
+  --p-desk: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='4' height='4'><rect width='1' height='1' fill='%23c3d3ea'/><rect x='2' y='2' width='1' height='1' fill='%23c3d3ea'/></svg>");
+
+  /* a 16px document icon for list rows */
+  --icon-doc: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 14'><path d='M1 0h7l3 3v11H1z' fill='none' stroke='%230b57d0' stroke-width='1'/><path d='M8 0v3h3' fill='none' stroke='%230b57d0' stroke-width='1'/><path d='M3 6h6v1H3zM3 8h6v1H3zM3 10h4v1H3z' fill='%230b57d0'/></svg>");
 
   /* the classic hard shadow */
   --shadow: 2px 2px 0 var(--ink);
 
-  /* chrome is Chicago, labels are Geneva, the prose is Monaco */
-  --font-chrome: 'Chicago 12', 'Chicago FLF', 'Geneva', system-ui, sans-serif;
-  --font-display: 'Chicago FLF', 'Chicago 12', system-ui, sans-serif;
-  --font-ui: 'Geneva 9', Geneva, 'Verdana', system-ui, sans-serif;
-  --font-body: 'Monaco 9', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  /* type: chrome is Chicago, everything you read is your own system's */
+  --font-chrome: 'Chicago 12', system-ui, sans-serif;
+  --font-ui: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto,
+    'Helvetica Neue', Arial, sans-serif;
+  --font-body: var(--font-ui);
+  --font-display: var(--font-ui);
+  --font-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas,
+    'Liberation Mono', monospace;
 
-  --measure: 74ch;
+  --measure: 70ch;
   --wide: 96rem;
   --radius: 6px;
-
-  /* aliases, so a stray var() in a template still resolves to ink */
-  --bg: var(--paper);
-  --bg-soft: var(--paper);
-  --panel: var(--paper);
-  --line: var(--ink);
-  --line-soft: var(--ink);
-  --fg: var(--ink);
-  --fg-dim: var(--ink);
-  --fg-faint: var(--ink);
-  --accent: var(--ink);
-  --accent-dim: var(--ink);
-  --warn: var(--ink);
-  --link: var(--ink);
-  --on-accent: var(--paper);
 }
 
-/* inverted video: white ink on black paper */
+/* inverted video: white ink on black paper, with light accents */
 :root[data-theme='invert'] {
   color-scheme: dark;
   --ink: #fff;
   --paper: #000;
-  --p-50: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='2' height='2'><rect width='1' height='1' fill='white'/><rect x='1' y='1' width='1' height='1' fill='white'/></svg>");
-  --p-25: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='2' height='2'><rect width='1' height='1' fill='white'/></svg>");
-  /* inverted video flips the relationship: white dots behind white letters do
-     not tint a row, they shred it — so the same tint is drawn at half the
-     density (a 4x4 tile, two dots), where it still reads as a grey band */
-  --p-tint: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='4' height='4'><rect width='1' height='1' fill='white'/><rect x='2' y='2' width='1' height='1' fill='white'/></svg>");
-  --icon-doc: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 14'><path d='M1 0h7l3 3v11H1z' fill='none' stroke='white' stroke-width='1'/><path d='M8 0v3h3' fill='none' stroke='white' stroke-width='1'/><path d='M3 6h6v1H3zM3 8h6v1H3zM3 10h4v1H3z' fill='white'/></svg>");
+
+  --accent: #8ab4f8;      /* light blue reads on black; dark blue does not */
+  --on-accent: #000000;
+  --muted: #c8cedb;
+  --row-tint: #12151c;
+  --head-tint: #1a2030;
+  --rule: #8ab4f8;
+  --green: #7dcf9a;
+
+  --t1-bg: #12203a; --t1-fg: #8ab4f8;
+  --t2-bg: #2a1414; --t2-fg: #ff9d95;
+  --t3-bg: #12261a; --t3-fg: #7dcf9a;
+  --t4-bg: #231b06; --t4-fg: #f0c25e;
+  --t5-bg: #1e1631; --t5-fg: #c0a8ff;
+
+  --wm-1: #8ab4f8; --wm-2: #c0a8ff; --wm-3: #ff9d95;
+  --wm-fallback: #ffffff;
+
+  --p-desk: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='4' height='4'><rect width='1' height='1' fill='%2326314a'/><rect x='2' y='2' width='1' height='1' fill='%2326314a'/></svg>");
+
+  --icon-doc: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 14'><path d='M1 0h7l3 3v11H1z' fill='none' stroke='%238ab4f8' stroke-width='1'/><path d='M8 0v3h3' fill='none' stroke='%238ab4f8' stroke-width='1'/><path d='M3 6h6v1H3zM3 8h6v1H3zM3 10h4v1H3z' fill='%238ab4f8'/></svg>");
+
+  /* the active title bar stays a deep blue so its white title keeps 9.7:1 */
+  --accent-bar: #1c3f8f;
+  --on-accent-bar: #ffffff;
+}
+:root {
+  --accent-bar: #0b57d0;
+  --on-accent-bar: #ffffff;
 }
 
 /* --- base ---------------------------------------------------------------- */
@@ -124,15 +129,15 @@ html {
   -webkit-text-size-adjust: 100%;
 }
 
-/* the desktop: a fixed 50% dither over the paper ground, so every page is a
-   window sitting on a patterned screen */
+/* the desktop: a fixed pattern layer of pale dots behind every page, so each
+   page is a window sitting on a screen */
 body::before {
   content: "";
   position: fixed;
   inset: 0;
   z-index: -1;
   pointer-events: none;
-  background-image: var(--p-50);
+  background-image: var(--p-desk);
 }
 
 body {
@@ -140,24 +145,29 @@ body {
   min-height: 100vh;
   color: var(--ink);
   font-family: var(--font-body);
-  font-size: 13px;
-  line-height: 1.75;
+  font-size: 16px;
+  line-height: 1.7;
 }
 
-::selection { background: var(--ink); color: var(--paper); }
+::selection { background: var(--accent); color: var(--on-accent); }
 
 a {
-  color: var(--ink);
+  color: var(--accent);
   text-decoration: underline;
   text-decoration-thickness: 1px;
   text-underline-offset: 2px;
 }
 /* the Mac highlight: hovering a link selects it */
-a:hover { background: var(--ink); color: var(--paper); text-decoration: none; }
+a:hover {
+  background: var(--accent);
+  color: var(--on-accent);
+  text-decoration: none;
+}
 a:focus-visible,
 button:focus-visible,
-summary:focus-visible {
-  outline: 1px dotted var(--ink);
+summary:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
 
@@ -170,53 +180,63 @@ summary:focus-visible {
 
 h1, h2, h3, h4 {
   font-family: var(--font-display);
-  font-weight: 400;
-  line-height: 1.2;
-  letter-spacing: 0;
-  margin: 1.8em 0 0.6em;
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+  margin: 1.7em 0 0.6em;
   color: var(--ink);
 }
-h1 { font-size: 1.75rem; margin-top: 0; }
-h2 { font-size: 1.2rem; }
-h3 { font-size: 1.02rem; }
-h4 { font-size: 0.95rem; }
+h1 { font-size: 1.95rem; margin-top: 0; letter-spacing: -0.02em; }
+h2 { font-size: 1.32rem; }
+h3 { font-size: 1.1rem; }
+h4 { font-size: 1rem; }
 
-/* a section header the way a Mac document would rule one off */
-.window-body h2:not(.rail-title):not(.bar-title) {
-  border-bottom: 1px solid var(--ink);
-  padding-bottom: 2px;
+/* a section header the way a Mac document ruled one off, with the accent
+   doing the ruling so the page keeps some colour */
+.window-body h2:not(.rail-title):not(.bar-title),
+.prose h2 {
+  border-left: 4px solid var(--rule);
+  padding-left: 0.55rem;
+  margin-left: -0.62rem;
 }
 
 p, ul, ol, blockquote, table, pre { margin: 0 0 1.15em; }
+p { max-width: var(--measure); }
 ul, ol { padding-left: 1.4em; }
-li { margin-bottom: 0.25em; }
-li::marker { color: var(--ink); }
+li { margin-bottom: 0.3em; }
+li::marker { color: var(--accent); }
 
 hr { border: 0; border-top: 1px solid var(--ink); margin: 2.2em 0; }
 
 blockquote {
-  border-left: 3px solid var(--ink);
+  border-left: 3px solid var(--rule);
   padding: 0.1em 0 0.1em 1em;
+  color: var(--muted);
+  max-width: var(--measure);
 }
 
-/* inline code reads as selected text: inverted, the Mac way */
+/* inline code reads as selected text: inverted, the Mac way — and it is the
+   highest-contrast pair on the page, which is the point */
 code {
-  font-family: var(--font-body);
-  font-size: 0.95em;
+  font-family: var(--font-mono);
+  font-size: 0.92em;
   background: var(--ink);
   color: var(--paper);
-  padding: 0 0.28em;
+  padding: 0.05em 0.3em;
 }
 
 pre {
-  background: var(--paper);
   border: 1px solid var(--ink);
-  padding: 0.7em 0.9em;
+  padding: 0.85em 1.05em;
   overflow-x: auto;
-  font-size: 12px;
-  line-height: 1.6;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  line-height: 1.62;
 }
-pre code { background: none; color: inherit; padding: 0; }
+/* a Shiki-highlighted block carries its own (dark) theme, which is why the
+   background is not set here — the slab reads as a terminal in both palettes.
+   The inner <code> must not shrink it a second time. */
+pre code { background: none; color: inherit; padding: 0; font-size: 1em; }
 
 /* the art is not a code block — `font: inherit` is the load-bearing line */
 :where(ascii-art) > pre,
@@ -230,23 +250,18 @@ pre code { background: none; color: inherit; padding: 0; }
   line-height: 1.15;
 }
 
-table { width: 100%; border-collapse: collapse; font-size: 12px; }
-th, td { border: 1px solid var(--ink); padding: 0.35em 0.6em; text-align: left; vertical-align: top; }
-th { background-image: var(--p-tint); font-family: var(--font-chrome); font-weight: 400; }
+table { width: 100%; border-collapse: collapse; font-size: 14px; max-width: var(--measure); }
+th, td { border: 1px solid var(--ink); padding: 0.45em 0.65em; text-align: left; vertical-align: top; }
+th { background: var(--head-tint); font-weight: 700; }
 
 kbd {
   border: 1px solid var(--ink);
-  padding: 0 0.3em;
-  font-size: 0.9em;
-  background: var(--paper);
-}
-
-/* the machine's grey: a dither pattern clipped to the glyphs */
-.dim {
-  background-image: var(--p-50);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  border-bottom-width: 2px;
+  border-radius: 3px;
+  padding: 0 0.35em;
+  font-family: var(--font-mono);
+  font-size: 0.88em;
+  background: var(--row-tint);
 }
 
 /* --- the menu bar -------------------------------------------------------- */
@@ -267,19 +282,26 @@ kbd {
   padding: 0 0.4rem;
   flex-wrap: nowrap;
 }
+/* the application's own name, the way a Mac menu bar carried it */
+.menubar-app {
+  font-family: var(--font-chrome);
+  font-size: 14px;
+  padding: 5px 10px;
+  white-space: nowrap;
+  color: var(--ink);
+}
 .menubar-nav {
   display: flex;
   align-items: center;
   gap: 0;
-  margin-left: 0.35rem;
   min-width: 0;
   overflow: hidden;
 }
 .menubar-item {
   font-family: var(--font-chrome);
-  font-size: 13px;
+  font-size: 14px;
   line-height: 1;
-  padding: 5px 8px;
+  padding: 6px 10px;
   color: var(--ink);
   background: none;
   border: 0;
@@ -291,88 +313,35 @@ kbd {
 .menubar-nav a.menubar-item { cursor: pointer; }
 .menubar-item:hover,
 .menubar-item:focus-visible {
-  background: var(--ink);
-  color: var(--paper);
+  background: var(--accent);
+  color: var(--on-accent);
   text-decoration: none;
   outline: none;
 }
 .menubar-item[aria-current='page'] {
-  background: var(--ink);
-  color: var(--paper);
+  background: var(--accent);
+  color: var(--on-accent);
+}
+:root[data-theme='invert'] .menubar-item[aria-current='page'],
+:root[data-theme='invert'] .menubar-item:hover {
+  background: var(--accent-bar);
+  color: var(--on-accent-bar);
 }
 .menubar-right {
   margin-left: auto;
   display: flex;
   align-items: center;
-  gap: 0.2rem;
+  gap: 0.15rem;
 }
 /* the clock: the one thing on the bar that is just there, like the real one */
 .menubar-clock {
-  font-family: var(--font-chrome);
+  font-family: var(--font-ui);
   font-size: 13px;
-  padding: 5px 8px 5px 10px;
+  font-weight: 500;
+  padding: 6px 10px 6px 12px;
+  color: var(--muted);
   white-space: nowrap;
 }
-
-/* the Apple menu — a real menu, with the rainbow logo */
-.apple-menu { position: relative; }
-.apple-menu > summary {
-  list-style: none;
-  padding: 4px 9px 2px;
-  cursor: pointer;
-  display: block;
-}
-.apple-menu > summary::-webkit-details-marker { display: none; }
-.apple-menu > summary:hover,
-.apple-menu[open] > summary { background: var(--ink); }
-.apple {
-  display: block;
-  width: 15px;
-  height: 18px;
-  background: linear-gradient(
-    to bottom,
-    #61bb46 0 16.667%,
-    #fdb827 0 33.333%,
-    #f5821f 0 50%,
-    #e03a3e 0 66.667%,
-    #963d97 0 83.333%,
-    #009ddc 0 100%
-  );
-  -webkit-mask-image: var(--apple);
-  mask-image: var(--apple);
-  -webkit-mask-size: contain;
-  mask-size: contain;
-  -webkit-mask-repeat: no-repeat;
-  mask-repeat: no-repeat;
-  -webkit-mask-position: center;
-  mask-position: center;
-}
-.menu {
-  position: absolute;
-  left: 0;
-  top: 100%;
-  z-index: 60;
-  min-width: 15rem;
-  margin: 0;
-  padding: 2px 0;
-  list-style: none;
-  background: var(--paper);
-  border: 1px solid var(--ink);
-  box-shadow: var(--shadow);
-}
-.menu li { margin: 0; }
-.menu a {
-  display: block;
-  padding: 3px 16px;
-  font-family: var(--font-chrome);
-  font-size: 13px;
-  line-height: 1.5;
-  text-decoration: none;
-  white-space: nowrap;
-}
-.menu a:hover,
-.menu a:focus-visible { background: var(--ink); color: var(--paper); text-decoration: none; outline: none; }
-.menu .sep { border-top: 1px dotted var(--ink); margin-top: 2px; padding-top: 2px; }
 
 /* --- windows ------------------------------------------------------------- */
 
@@ -385,19 +354,28 @@ kbd {
   grid-template-columns: auto 1fr auto;
   align-items: center;
   gap: 4px;
-  height: 22px;
+  min-height: 24px;
   padding: 0 3px;
+}
+/* the active window is the coloured one: a blue bar with a white title, so the
+   page always says which window it is */
+.title-bar--active { background: var(--accent-bar); }
+.title-bar--active .title {
+  background: none;
+  color: var(--on-accent-bar);
+}
+/* the inactive ones keep the System 7 pinstripes */
+.title-bar--inactive {
   background-image: repeating-linear-gradient(
     to bottom,
     var(--ink) 0 1px,
     transparent 1px 2px
   );
 }
-.title-bar--inactive { background-image: none; }
 .title {
   font-family: var(--font-chrome);
-  font-size: 13px;
-  line-height: 1.4;
+  font-size: 14px;
+  line-height: 1.5;
   background: var(--paper);
   padding: 0 6px;
   margin: 0 auto;
@@ -407,7 +385,6 @@ kbd {
   white-space: nowrap;
   text-align: center;
 }
-.title-bar--inactive .title { background: none; }
 
 .close-box,
 .zoom-box {
@@ -418,7 +395,9 @@ kbd {
   background: var(--paper);
   display: block;
 }
-.close-box:hover, .close-box:focus-visible, .zoom-box:hover { background: var(--paper); outline: none; }
+.title-bar--active .close-box,
+.title-bar--active .zoom-box { border-color: var(--on-accent-bar); background: var(--on-accent-bar); }
+.close-box:hover, .close-box:focus-visible, .zoom-box:hover { outline: none; }
 .close-box::after {
   content: "";
   position: absolute;
@@ -437,7 +416,7 @@ kbd {
   border: 1px solid var(--ink);
 }
 
-.window-body { padding: 1.1rem 1.35rem 1.4rem; }
+.window-body { padding: 1.2rem 1.35rem 1.5rem; }
 .window-body--flush { padding: 0; }
 .window-shadow { box-shadow: var(--shadow); }
 
@@ -445,10 +424,11 @@ kbd {
 
 .btn {
   display: inline-block;
-  font-family: var(--font-chrome);
-  font-size: 13px;
+  font-family: var(--font-ui);
+  font-size: 13.5px;
+  font-weight: 500;
   line-height: 1.5;
-  padding: 2px 14px 3px;
+  padding: 3px 15px 4px;
   color: var(--ink);
   background: var(--paper);
   border: 1px solid var(--ink);
@@ -464,33 +444,34 @@ kbd {
   text-decoration: none;
   outline: none;
 }
+/* the default button's ring is the accent — the one place a button shows colour */
 .btn-default {
-  box-shadow: inset 0 0 0 1px var(--paper), 0 0 0 2px var(--paper), 0 0 0 3px var(--ink);
+  box-shadow: inset 0 0 0 1px var(--paper), 0 0 0 2px var(--paper), 0 0 0 3px var(--accent);
   margin: 0 3px;
 }
 
 .dialog { box-shadow: var(--shadow); }
-.dialog-body { padding: 1.2rem 1.3rem 1.2rem; }
+.dialog-body { padding: 1.25rem 1.35rem 1.25rem; }
 .dialog-buttons {
   display: flex;
   justify-content: flex-end;
   gap: 0.9rem;
-  padding: 0 1.3rem 1.2rem;
+  padding: 0 1.35rem 1.25rem;
 }
 
-/* --- scrollbars: a dithered track with a bordered thumb ------------------ */
+/* --- scrollbars: a paper track with a bordered thumb --------------------- */
 
 ::-webkit-scrollbar { width: 16px; height: 16px; background: var(--paper); }
 ::-webkit-scrollbar-track {
   background-color: var(--paper);
   background-image:
-    linear-gradient(45deg, var(--ink) 25%, transparent 25%, transparent 75%, var(--ink) 75%),
-    linear-gradient(45deg, var(--ink) 25%, transparent 25%, transparent 75%, var(--ink) 75%);
+    linear-gradient(45deg, var(--row-tint) 25%, transparent 25%, transparent 75%, var(--row-tint) 75%),
+    linear-gradient(45deg, var(--row-tint) 25%, transparent 25%, transparent 75%, var(--row-tint) 75%);
   background-size: 2px 2px;
   background-position: 0 0, 1px 1px;
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--paper);
+  background: var(--head-tint);
   border: 1px solid var(--ink);
 }
 ::-webkit-scrollbar-corner { background: var(--paper); }
@@ -545,7 +526,7 @@ kbd {
   padding: 0 1.25rem;
 }
 
-main { padding: 1.4rem 0 4rem; }
+main { padding: 1.5rem 0 4rem; }
 
 .skip {
   position: absolute;
@@ -557,9 +538,9 @@ main { padding: 1.4rem 0 4rem; }
   z-index: 70;
   background: var(--paper);
   border: 1px solid var(--ink);
-  padding: 0.2em 0.7em;
-  font-family: var(--font-chrome);
-  font-size: 13px;
+  padding: 0.25em 0.8em;
+  font-family: var(--font-ui);
+  font-size: 13.5px;
 }
 
 /* the desktop on the front page: windows on the left, icons down the right */
@@ -586,19 +567,22 @@ main { padding: 1.4rem 0 4rem; }
   padding: 2px;
   text-decoration: none;
   text-align: center;
+  color: var(--ink);
 }
 .icon:hover { background: none; text-decoration: none; }
 .icon svg { display: block; }
 .icon-label {
   font-family: var(--font-ui);
-  font-size: 11px;
+  font-size: 12px;
+  font-weight: 500;
   line-height: 1.4;
   background: var(--paper);
-  padding: 0 3px;
+  border: 1px solid var(--ink);
+  padding: 0 4px;
   max-width: 100%;
 }
 .icon:hover .icon-label,
-.icon:focus-visible .icon-label { background: var(--ink); color: var(--paper); }
+.icon:focus-visible .icon-label { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
 
 /* draggable windows: the transform is the position, so the layout never
    reflows; only switched on when there is a fine pointer and motion is fine */
@@ -606,7 +590,7 @@ main { padding: 1.4rem 0 4rem; }
 .icon[data-draggable] { cursor: move; touch-action: none; }
 .window[data-draggable] { will-change: transform; }
 
-/* a Finder window: the header row and the striped list */
+/* a Finder window: the header row and the alternative-tinted list */
 .finder-head,
 .finder-row {
   display: grid;
@@ -615,19 +599,22 @@ main { padding: 1.4rem 0 4rem; }
   align-items: baseline;
 }
 .finder-head {
-  font-family: var(--font-chrome);
-  font-size: 12px;
-  padding: 4px 1.35rem;
+  font-family: var(--font-ui);
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--muted);
+  padding: 5px 1.35rem;
   border-bottom: 1px solid var(--ink);
-  background-image: var(--p-tint);
+  background: var(--head-tint);
 }
 .finder-head span:last-child, .finder-row > :last-child { text-align: right; }
 .finder-list { list-style: none; margin: 0; padding: 0; }
 .finder-row {
-  padding: 7px 1.35rem 8px;
-  border-bottom: 1px dotted var(--ink);
+  padding: 9px 1.35rem 10px;
+  border-bottom: 1px solid var(--row-tint);
 }
-.finder-list > li:nth-child(even) { background-image: var(--p-tint); }
+.finder-list > li:nth-child(even) { background: var(--row-tint); }
 .finder-name {
   display: flex;
   gap: 0.55rem;
@@ -639,33 +626,37 @@ main { padding: 1.4rem 0 4rem; }
   flex: 0 0 12px;
   width: 12px;
   height: 14px;
-  margin-top: 0.35em;
+  margin-top: 0.42em;
   background-image: var(--icon-doc);
   background-repeat: no-repeat;
   background-size: contain;
 }
 .finder-name h3 {
-  font-family: var(--font-body);
-  font-size: 13px;
+  font-family: var(--font-ui);
+  font-size: 15.5px;
+  font-weight: 700;
+  line-height: 1.35;
+  letter-spacing: -0.005em;
   margin: 0;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 .finder-name h3 a { text-decoration: none; }
-.finder-name h3 a:hover { background: var(--ink); color: var(--paper); }
+.finder-name h3 a:hover { background: var(--accent); color: var(--on-accent); }
 .finder-desc {
-  margin: 0.15em 0 0;
-  font-size: 11.5px;
+  margin: 0.2em 0 0;
+  font-size: 14px;
   line-height: 1.6;
+  color: var(--muted);
 }
 .finder-time,
 .finder-min {
   font-family: var(--font-ui);
-  font-size: 11.5px;
+  font-size: 13px;
+  color: var(--muted);
   white-space: nowrap;
+  text-align: right;
 }
-.finder-time { grid-column: 3; }
-.finder-min { grid-column: 4; }
 
 /* --- a note: a document window beside an Info window --------------------- */
 
@@ -678,35 +669,33 @@ main { padding: 1.4rem 0 4rem; }
   margin-inline: auto;
 }
 .note-shell { min-width: 0; }
-.note-rail {
-  position: sticky;
-  top: 3.4rem;
-  font-size: 12px;
-}
-.page-rail { font-size: 12px; }
-.rail-block { margin-bottom: 1.4rem; }
+.note-rail { min-width: 0; font-size: 13px; }
+.page-rail { font-size: 13px; }
+.rail-block { margin-bottom: 1.5rem; }
 .rail-block:last-child { margin-bottom: 0; }
 .rail-title {
-  font-family: var(--font-chrome);
+  font-family: var(--font-ui);
   font-size: 12px;
-  font-weight: 400;
-  letter-spacing: 0;
-  margin: 0 0 0.5rem;
-  padding-bottom: 2px;
-  border-bottom: 1px solid var(--ink);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 0 0 0.6rem;
+  padding-bottom: 3px;
+  border-bottom: 2px solid var(--rule);
 }
 .rail-toc { list-style: none; margin: 0; padding: 0; }
-.rail-toc li { margin-bottom: 0.3rem; line-height: 1.5; }
+.rail-toc li { margin-bottom: 0.4rem; line-height: 1.5; }
 .rail-toc a { text-decoration: none; }
-.rail-meta { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 0.25rem 0.9rem; }
-.rail-meta dt { font-family: var(--font-ui); font-size: 11.5px; }
+.rail-meta { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 0.3rem 0.9rem; }
+.rail-meta dt { font-size: 13px; color: var(--muted); }
 .rail-meta dd { margin: 0; }
 .rail-tags { display: flex; flex-wrap: wrap; gap: 0.45rem; }
 .rail-links { list-style: none; margin: 0; padding: 0; }
-.rail-links li { margin-bottom: 0.35rem; line-height: 1.5; }
+.rail-links li { margin-bottom: 0.4rem; line-height: 1.5; }
 .rail-links a { text-decoration: none; }
 
-/* legacy grids, still used by a couple of pages */
+/* legacy grids, still referenced by a couple of pages */
 .note-grid,
 .page-grid {
   display: grid;
@@ -717,51 +706,42 @@ main { padding: 1.4rem 0 4rem; }
   margin-inline: auto;
 }
 .page-grid > .bleed { grid-column: 1 / -1; }
-.page-rail { position: sticky; top: 3.4rem; }
-
-@media (max-width: 60rem) {
-  .desktop,
-  .note-desktop,
-  .note-grid,
-  .page-grid { grid-template-columns: minmax(0, 1fr); }
-  .desktop-icons { flex-direction: row; flex-wrap: wrap; justify-content: center; gap: 0.6rem; }
-  .icon { width: 5.5rem; }
-  .note-rail, .page-rail { position: static; }
-  .finder-head, .finder-row { grid-template-columns: minmax(0, 1fr) 6.5rem 3.5rem; }
-  .finder-tags { display: none; }
-}
+.page-rail { position: sticky; top: 3.6rem; }
 
 /* --- prose and note chrome ---------------------------------------------- */
 
 .post-header { max-width: var(--measure); }
-.post-header h1 { font-size: 1.9rem; }
+.post-header h1 { font-size: 2.1rem; }
 .post-header .meta {
   font-family: var(--font-ui);
-  font-size: 11.5px;
+  font-size: 13px;
+  color: var(--muted);
   display: flex;
-  gap: 1rem;
+  gap: 1.1rem;
   flex-wrap: wrap;
-  margin: 0.5rem 0 0.9rem;
+  margin: 0.5rem 0 1rem;
 }
 .prose { max-width: var(--measure); }
-.prose > p:first-of-type { font-size: 13px; }
-.post-hero { margin: 1.4rem 0; max-width: 64rem; }
+.prose > p:first-of-type { font-size: 1.06rem; }
+.post-hero { margin: 1.5rem 0; max-width: 64rem; }
 .post-footer {
   max-width: var(--measure);
-  margin-top: 2.4rem;
-  padding-top: 1rem;
+  margin-top: 2.6rem;
+  padding-top: 1.1rem;
   border-top: 1px solid var(--ink);
-  font-size: 12px;
+  font-size: 13.5px;
+  color: var(--muted);
 }
-.lede { max-width: 62ch; }
+.lede { max-width: 64ch; font-size: 1.06rem; color: var(--muted); }
 
 /* --- the art: a matted, one-bit picture ---------------------------------- */
 
-.ascii-figure { margin: 1.4rem 0 1.6rem; }
+.ascii-figure { margin: 1.5rem 0 1.7rem; }
 .ascii-figure figcaption {
   font-family: var(--font-ui);
-  font-size: 11.5px;
-  padding-top: 0.45rem;
+  font-size: 13px;
+  color: var(--muted);
+  padding-top: 0.5rem;
   display: flex;
   gap: 1rem;
   justify-content: space-between;
@@ -787,6 +767,7 @@ main { padding: 1.4rem 0 4rem; }
   /* fill exactly the box the canvas will take: `cols / (rows * cell)` wide,
      and a monospace character is about 0.6em */
   font-size: calc(100cqw / (var(--art-cols) * 0.6));
+  font-family: var(--font-mono);
   line-height: 1.2;
   white-space: pre;
   letter-spacing: 0;
@@ -829,37 +810,59 @@ main { padding: 1.4rem 0 4rem; }
 
 /* --- tags, stats, callouts ---------------------------------------------- */
 
-.tags { display: flex; gap: 0.8rem; flex-wrap: wrap; padding: 0; list-style: none; margin: 0; }
-.tag { font-family: var(--font-ui); font-size: 11.5px; text-decoration: none; }
+.tags { display: flex; gap: 0.4rem 0.5rem; flex-wrap: wrap; padding: 0; list-style: none; margin: 0; }
+/* each tag is a chip: a soft ground with a matching ink, five hues rotating.
+   Every pair is in the contrast table, in both themes. */
+.tag {
+  font-family: var(--font-ui);
+  font-size: 12.5px;
+  font-weight: 500;
+  line-height: 1.6;
+  text-decoration: none;
+  background: var(--t1-bg);
+  color: var(--t1-fg);
+  border-radius: 4px;
+  padding: 0 0.45em;
+}
 .tag::before { content: "#"; }
 .tag:hover { background: var(--ink); color: var(--paper); }
-.tag-cloud { display: flex; gap: 0.5rem 0.9rem; flex-wrap: wrap; list-style: none; padding: 0; margin: 0; }
-.tag-cloud li { display: flex; gap: 0.3rem; align-items: baseline; }
-.tag-cloud .count { font-family: var(--font-ui); font-size: 11px; }
+.tags > .tag:nth-of-type(5n+2),
+.tag-cloud li:nth-child(5n+2) .tag { background: var(--t2-bg); color: var(--t2-fg); }
+.tags > .tag:nth-of-type(5n+3),
+.tag-cloud li:nth-child(5n+3) .tag { background: var(--t3-bg); color: var(--t3-fg); }
+.tags > .tag:nth-of-type(5n+4),
+.tag-cloud li:nth-child(5n+4) .tag { background: var(--t4-bg); color: var(--t4-fg); }
+.tags > .tag:nth-of-type(5n+5),
+.tag-cloud li:nth-child(5n+5) .tag { background: var(--t5-bg); color: var(--t5-fg); }
+.tag-cloud { display: flex; gap: 0.55rem 1rem; flex-wrap: wrap; list-style: none; padding: 0; margin: 0; }
+.tag-cloud li { display: flex; gap: 0.35rem; align-items: baseline; }
+.tag-cloud .count { font-family: var(--font-ui); font-size: 12.5px; color: var(--muted); }
 .tag-cloud .count::before { content: "("; }
 .tag-cloud .count::after { content: ")"; }
 
 .callout {
   border: 1px solid var(--ink);
-  box-shadow: inset 0 0 0 1px var(--paper), inset 4px 0 0 0 var(--ink);
-  padding: 0.5em 0.8em 0.5em 1.1em;
+  border-left: 4px solid var(--rule);
+  background: var(--row-tint);
+  padding: 0.7em 1em 0.7em 1.1em;
   margin: 1.5rem 0;
-  font-size: 12.5px;
+  font-size: 14.5px;
+  max-width: var(--measure);
 }
 
 .stat-row {
   display: flex;
   gap: 2rem;
   flex-wrap: wrap;
-  margin: 1.4rem 0;
+  margin: 1.5rem 0;
   padding: 0;
   list-style: none;
 }
 .stat-row li { padding: 0; }
-.stat-row b { display: block; font-family: var(--font-display); font-size: 1.25rem; line-height: 1.3; }
-.stat-row span { font-family: var(--font-ui); font-size: 11px; }
+.stat-row b { display: block; font-family: var(--font-display); font-weight: 700; font-size: 1.35rem; line-height: 1.3; color: var(--accent); }
+.stat-row span { font-family: var(--font-ui); font-size: 12.5px; color: var(--muted); }
 
-.filters { display: flex; gap: 1.2rem; flex-wrap: wrap; align-items: baseline; margin-bottom: 1.2rem; }
+.filters { display: flex; gap: 1.2rem; flex-wrap: wrap; align-items: baseline; margin-bottom: 1.2rem; font-size: 14px; }
 
 .sr-only {
   position: absolute;
@@ -877,23 +880,45 @@ main { padding: 1.4rem 0 4rem; }
 
 .wordmark {
   font-family: var(--font-display);
-  font-size: clamp(1.9rem, 5vw, 3.3rem);
-  line-height: 1;
-  margin: 0.2rem 0 0.5rem;
+  font-weight: 800;
+  font-size: clamp(2rem, 5.5vw, 3.6rem);
+  line-height: 1.05;
+  letter-spacing: -0.025em;
+  margin: 0.2rem 0 0.6rem;
+  /* every stop of the gradient clears AA on paper; the plain ink is the
+     fallback where clipped text is not supported */
+  color: var(--wm-fallback);
+}
+@supports (background-clip: text) or (-webkit-background-clip: text) {
+  .wordmark {
+    background-image: linear-gradient(96deg, var(--wm-1), var(--wm-2) 55%, var(--wm-3));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
 }
 .prompt {
-  font-family: var(--font-ui);
-  font-size: 11.5px;
-  margin: 0 0 0.7rem;
+  font-family: var(--font-mono);
+  font-size: 13.5px;
+  color: var(--green);
+  margin: 0 0 0.8rem;
 }
 .prompt .prompt-mark::before { content: "$ "; }
+/* the rule under the wordmark: the palette, stated once */
+.wordmark-rule {
+  height: 3px;
+  max-width: var(--measure);
+  margin: 0 0 1.2rem;
+  background: linear-gradient(90deg, var(--wm-1), var(--wm-2) 45%, var(--wm-3) 75%, var(--wm-1));
+}
 
 /* --- footer -------------------------------------------------------------- */
 
 .site-footer {
   font-family: var(--font-ui);
-  font-size: 11.5px;
-  padding: 1.4rem 0 2.5rem;
+  font-size: 13px;
+  color: var(--muted);
+  padding: 1.5rem 0 2.6rem;
   line-height: 1.8;
 }
 .site-footer .footer-grid {
@@ -901,16 +926,21 @@ main { padding: 1.4rem 0 4rem; }
   gap: 2rem;
   flex-wrap: wrap;
   justify-content: space-between;
-  padding: 0.9rem 1.1rem 1rem;
+  padding: 1rem 1.15rem 1.1rem;
 }
 .site-footer a { text-decoration: none; }
+.site-footer a:hover { text-decoration: none; }
 
-@media (max-width: 40rem) {
-  .menubar-item { padding: 5px 6px; font-size: 12px; }
-  .menubar-clock { display: none; }
-  .window-body { padding: 1rem 0.95rem 1.15rem; }
-  .finder-head, .finder-row { grid-template-columns: minmax(0, 1fr) 5.5rem; }
-  .finder-min { display: none; }
+@media (max-width: 60rem) {
+  .desktop,
+  .note-desktop,
+  .note-grid,
+  .page-grid { grid-template-columns: minmax(0, 1fr); }
+  .desktop-icons { flex-direction: row; flex-wrap: wrap; justify-content: center; gap: 0.7rem; }
+  .icon { width: 6rem; }
+  .note-rail, .page-rail { position: static; }
+  .finder-head, .finder-row { grid-template-columns: minmax(0, 1fr) 6.5rem 3.5rem; }
+  .finder-tags { display: none; }
 }
 
 /* --- Finder rows: padding that bleeds to the window edge ----------------- */
@@ -924,8 +954,8 @@ main { padding: 1.4rem 0 4rem; }
   margin-left: calc(-1 * var(--body-pad));
   margin-right: calc(-1 * var(--body-pad));
 }
-.finder-head { padding-top: 4px; padding-bottom: 4px; }
-.finder-row { padding-top: 7px; padding-bottom: 8px; }
+.finder-head { padding-top: 5px; padding-bottom: 5px; }
+.finder-row { padding-top: 9px; padding-bottom: 10px; }
 .finder-row--two { grid-template-columns: minmax(0, 1fr) 8rem; }
 .finder-time, .finder-min { text-align: right; }
 
@@ -933,9 +963,9 @@ main { padding: 1.4rem 0 4rem; }
    which is where the site's scrollbar dressing shows itself most */
 .info-window {
   position: sticky;
-  top: 3.4rem;
+  top: 3.6rem;
   align-self: start;
-  max-height: calc(100vh - 4.6rem);
+  max-height: calc(100vh - 4.8rem);
   display: flex;
   flex-direction: column;
 }
@@ -943,9 +973,15 @@ main { padding: 1.4rem 0 4rem; }
 .note-rail { position: static; }
 
 /* an alert dialog: the message is the heading, at dialog size */
-.dialog-body h1 { font-size: 1.02rem; margin: 0 0 0.7em; }
+.dialog-body h1 { font-size: 1.2rem; margin: 0 0 0.7em; }
 
 @media (max-width: 40rem) {
   :root { --body-pad: 0.95rem; }
+  .menubar-app { padding: 5px 6px; font-size: 13px; }
+  .menubar-item { padding: 6px 7px; font-size: 13px; }
+  .menubar-clock { display: none; }
+  .window-body { padding: 1.1rem 0.95rem 1.25rem; }
+  .finder-head, .finder-row { grid-template-columns: minmax(0, 1fr) 5.5rem; }
+  .finder-min { display: none; }
   .info-window { position: static; max-height: none; }
 }

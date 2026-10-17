@@ -426,22 +426,44 @@ def main() -> int:
 
         # --- the desktop is actually dressed ---------------------------------
         # the pattern layer behind every page, the menu bar, a window with its
-        # border, and the Apple in the menu bar
+        # border, the app's name in the bar, and the accent doing its work
+        # an earlier check in this run leaves the Invert switch on, so put the
+        # page back on paper and read the accent from the token, not a hex
+        page.evaluate("() => { try { localStorage.setItem('theme', 'paper'); } catch {} }")
         page.goto(args.base_url + "/", wait_until="networkidle")
         desk = page.evaluate(
             """() => {
               const layer = getComputedStyle(document.body, '::before');
               const bar = document.querySelector('.site-header');
               const win = document.querySelector('.window');
-              const title = document.querySelector('.title-bar');
+              const inactive = document.querySelector('.title-bar--inactive');
+              const active = document.querySelector('.title-bar--active');
+              const app = document.querySelector('.menubar-app');
+              const body = getComputedStyle(document.body);
+              const mk = getComputedStyle(document.documentElement);
               return {
                 layerPosition: layer.position,
                 layerPattern: layer.backgroundImage.includes('svg'),
-                layering: getComputedStyle(bar || document.body).position,
                 menubar: !!bar,
+                appName: app ? app.textContent.trim() : null,
                 window: !!win,
                 windowBorder: win ? getComputedStyle(win).borderTopWidth : null,
-                pinstripes: title ? getComputedStyle(title).backgroundImage.includes('gradient') : false,
+                pinstripes: inactive ? getComputedStyle(inactive).backgroundImage.includes('gradient') : false,
+                activeBar: active ? getComputedStyle(active).backgroundColor : null,
+                titleInk: active ? getComputedStyle(active.querySelector('.title')).color : null,
+                bodyFont: body.fontFamily,
+                bodySize: parseFloat(body.fontSize),
+                accent: mk.getPropertyValue('--accent').trim(),
+                accentBarToken: (() => {
+                  const probe = document.createElement('span');
+                  probe.style.color = 'var(--accent-bar)';
+                  document.body.appendChild(probe);
+                  const c = getComputedStyle(probe).color;
+                  probe.remove();
+                  return c;
+                })(),
+                rowTint: mk.getPropertyValue('--row-tint').trim(),
+                headlineFont: getComputedStyle(document.querySelector('.wordmark')).fontFamily,
               };
             }"""
         )
@@ -452,7 +474,7 @@ def main() -> int:
         )
         check(
             desk["menubar"] and desk["window"] and desk["pinstripes"],
-            "a menu bar and a pinstriped window are on the page",
+            "a menu bar and a pinstriped inactive window are on the page",
             str(desk),
         )
         check(
@@ -461,21 +483,49 @@ def main() -> int:
             str(desk),
         )
 
-        apple = page.evaluate(
-            """() => {
-              const a = document.querySelector('.apple');
-              if (!a) return null;
-              const s = getComputedStyle(a);
-              return {
-                mask: (s.maskImage || s.webkitMaskImage || ''),
-                fill: s.backgroundImage.slice(0, 60),
-              };
-            }"""
+        # the Apple menu is gone; the menu bar names the application instead
+        check(
+            desk["appName"] == "Terminal Notes",
+            "the menu bar names the app rather than carrying the Apple logo",
+            str(desk["appName"]),
         )
         check(
-            apple is not None and "svg" in (apple["mask"] or "") and "gradient" in apple["fill"],
-            "the menu bar carries the Apple logo",
-            str(apple),
+            page.query_selector(".apple, .apple-menu") is None,
+            "no Apple logo or Apple menu is left in the markup",
+            "found .apple/.apple-menu",
+        )
+
+        # colour: the active title bar is an accent bar with a readable title,
+        # and the accent/row-tint tokens exist (the contrast harness proves the
+        # ratios; this only proves the design is wired up)
+        check(
+            desk["activeBar"] == desk["accentBarToken"]
+            and desk["titleInk"] == "rgb(255, 255, 255)"
+            and desk["accentBarToken"] not in ("rgb(255, 255, 255)", "rgb(0, 0, 0)"),
+            "the active window's title bar is the accent colour",
+            f"bar={desk['activeBar']} token={desk['accentBarToken']} title={desk['titleInk']}",
+        )
+        check(
+            desk["accent"] and desk["rowTint"] and desk["accent"] != desk["rowTint"],
+            "the accent and row-tint tokens are defined",
+            f"accent={desk['accent']} row-tint={desk['rowTint']}",
+        )
+
+        # modern type for everything read, Chicago only for the chrome
+        check(
+            "ui-sans-serif" in desk["bodyFont"] and desk["bodySize"] >= 16,
+            "body text is set in the reader's UI font at 16px or more",
+            f"{desk['bodyFont']} @ {desk['bodySize']}px",
+        )
+        check(
+            "Chicago" not in desk["headlineFont"] and "ui-sans-serif" in desk["headlineFont"],
+            "headings use the modern face, not the pixel chrome face",
+            str(desk["headlineFont"]),
+        )
+        check(
+            "Chicago" not in desk["bodyFont"],
+            "no pixel font is used for text",
+            str(desk["bodyFont"]),
         )
 
         browser.close()

@@ -117,11 +117,24 @@ def main() -> int:
         css_url = urllib.parse.urljoin(base, assets[0])
         s, css = get(css_url)
         check(s == 200 and len(css) > 2000, f"the stylesheet loads ({css_url})", f"status {s}")
-        # the design is one bit: the live sheet must carry the dither tiles and
-        # the two tokens the whole page is made of, not a colour palette
+        # the live sheet must carry the System 7 chrome (the dither tile, the
+        # two tokens every window is drawn from) *and* the accents the readable
+        # pass added: a link accent, a row tint, and the tag hue pairs
         check(
-            "svg+xml" in css and "--paper" in css and "--p-tint" in css,
-            "the live stylesheet carries the one-bit palette and the dither tiles",
+            "svg+xml" in css and "--paper" in css and "--p-desk" in css,
+            "the live stylesheet carries the desktop dither and the paper/ink tokens",
+        )
+        check(
+            "--accent" in css and "--row-tint" in css and "--t1-fg" in css,
+            "the live stylesheet carries the accent palette (links, row tint, tag hues)",
+        )
+        check(
+            "ui-sans-serif" in css and "ChiKareGo2" in css,
+            "the live stylesheet sets modern text faces and keeps Chicago for the chrome",
+        )
+        check(
+            ".apple" not in css and "apple-menu" not in css,
+            "no Apple menu styling remains in the live sheet",
         )
 
     if note_links:

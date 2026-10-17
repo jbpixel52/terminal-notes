@@ -2,7 +2,6 @@
 import { url } from '../lib/url';
 import { SITE } from '../consts';
 import chicago from '../assets/fonts/ChiKareGo2.woff2?url';
-import monaco from '../assets/fonts/monaco.woff2?url';
 
 interface Props { title: string; description: string; image?: string; }
 const { title, description } = Astro.props;
@@ -23,7 +22,6 @@ const canonical = new URL(Astro.url.pathname, Astro.site ?? SITE.url);
 <link rel="icon" href={url('/favicon.svg')} type="image/svg+xml" />
 <link rel="alternate" type="application/rss+xml" title={SITE.title} href={url('/rss.xml')} />
 <link rel="preload" as="font" type="font/woff2" href={chicago} crossorigin />
-<link rel="preload" as="font" type="font/woff2" href={monaco} crossorigin />
 <script is:inline>
   // Paper by default — this is a System 7 desktop — and inverted video when
   // the reader has asked for it, here or on their own machine.

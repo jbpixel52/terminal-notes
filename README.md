@@ -61,6 +61,7 @@ over the templates will miss them. It did.
 npm run anon        # the privacy gate (see ANONYMIZATION.md)
 npm run build
 npm run verify      # every route in a real browser, screenshots to .verify/
+npm run contrast    # WCAG 2.1 contrast of every text style, in both palettes
 npm run deployed    # the live site: sitemap, content, feed, robots
 ```
 
@@ -133,41 +134,46 @@ src/
   art/sources.js           where each photograph came from (generated)
   components/Art.astro     a generated picture: still + canvas + injector
   components/Ascii.astro   a catalogue piece from ascii.rest, validated by name
-  components/Header.astro  the menu bar: Apple menu, nav, clock, Invert
-  components/MacIcon.astro 1-bit pixel icons (document, folder, disk, trash)
+  components/Header.astro  the menu bar: app name, nav, RSS, clock, Invert
+  components/MacIcon.astro pixel icons (document, folder, disk, trash), one accent detail each
   components/NoteItem.astro a Finder list row
   layouts/                 BaseLayout (shell) + PostLayout (note + Info window)
   pages/                   index, /notes, /notes/<slug>, /tags/<tag>, /art, …
-  assets/fonts/            Chicago, Geneva, Monaco, ChicagoFLF (woff2, self-hosted)
-  styles/global.css        the whole design system, ~950 lines
+  assets/fonts/            ChiKareGo2 (Chicago 12, woff2, self-hosted)
+  styles/global.css        the whole design system
 tools/
   make-art.py              wallhaven -> ascii piece modules (Pillow + urllib)
 scripts/
   check-anonymized.mjs     privacy gate: shape checks + a git-ignored term list
   verify_site.py           browser harness: routes, headings, art, theme, screenshots
+  check_contrast.py        WCAG 2.1 contrast of every text style, both palettes
 ```
 
 ## Design notes
 
 - The site is dressed as a **System 7 Macintosh**: a dithered screen, white
-  windows with pinstriped title bars, close and zoom boxes, and a menu bar whose
-  left edge is the rainbow Apple. The front page is a Finder desktop — the
-  windows on it can be dragged, and <kbd>Esc</kbd> puts them back — and every
-  other page is a document window with an **Info** window beside it.
-- It is a **one-bit** design: one ink, one paper, and every grey on the page is a
-  **dither pattern** (an SVG checkerboard tiled one pixel per cell) rather than a
-  colour, because that is how a one-bit screen made grey. The only colour is the
-  Apple in the menu bar, the one place System 7 spent it deliberately.
+  windows with title bars and close and zoom boxes, and a menu bar that names the
+  application rather than carrying Apple's logo. The front page is a Finder
+  desktop — the windows on it can be dragged, and <kbd>Esc</kbd> puts them back —
+  and every other page is a document window with an **Info** window beside it.
+- **Readable first.** Body text, headings, list rows and labels are set in the
+  reader's own UI sans at 16px and up, and code and ascii in their system
+  monospace. The one self-hosted face left is **Chicago 12**, and only for the
+  chrome: the menu bar and the window titles. A dozen characters at 14px is a
+  signature; a page of it was not.
+- **Colour as accents.** Ink blue carries the active window's title bar, the
+  current menu item, links, the bar beside a section heading and the default
+  button's ring; tags rotate through five soft hue pairs; the desktop dither is
+  pale blue; the wordmark is a dark gradient that every stop of can be read.
+- **No dither behind type.** The one-bit palette still draws the chrome — one
+  ink, one paper, hard 1px borders, a 2px shadow — but the checkerboard now only
+  appears where nothing is read through it: the screen behind the windows, and
+  the pinstripes of an inactive title bar. Every tint behind text
+  (`--row-tint`, `--head-tint`) is flat.
 - **Invert** in the menu bar swaps ink and paper — the Mac's inverted video. The
   ascii pictures invert with it, the choice is kept in local storage, and a
-  reader whose system prefers dark starts inverted.
-- Four self-hosted faces: Chicago for the chrome, Geneva for small labels, Monaco
-  for the prose and the code (this is a notes site; its voice is monospace), and
-  Chicago again as an outline face for the wordmark.
-- Type over a texture is heavier than type on paper, so a tint behind text is a
-  *sparse* dither: the 25% checkerboard is fine behind black letters and is drawn
-  at half density in the inverted theme, where white dots behind white letters
-  would shred them.
+  reader whose system prefers dark starts inverted. The accent tokens have a
+  light/dark pair each, so contrast holds both ways.
 - Motion respects `prefers-reduced-motion`: the ascii art holds its first frame,
   the CSS stops.
 - The only client-side JavaScript is the menu-bar clock, the Invert switch, the
@@ -179,9 +185,8 @@ scripts/
 - [Astro](https://astro.build/) — static site framework (MIT).
 - [system.css](https://github.com/sakofchit/system.css) by
   [@sakofchit](https://github.com/sakofchit) — the System 7 window, menu, button
-  and scrollbar chrome, the dither patterns, and the vendored bitmap fonts:
-  Chicago 12 and Geneva 9 as recreated by Giles Booth, a Chicago outline face,
-  and Monaco (MIT).
+  and scrollbar chrome, the dither patterns, and the one bitmap face still
+  vendored here: Chicago 12, as recreated by Giles Booth (MIT).
 - [ascii.rest](https://ascii.rest/) by [@bas3line](https://github.com/bas3line)
   — the piece contract and the canvas runtime that animates each picture (MIT).
 - Photographs for the generated art come from
