@@ -205,7 +205,12 @@ def build(slug: str, query: str, cols: int, rows: int, print_only: bool = False)
     # walking the ramp from the bright end is what stops the image reading as a
     # photographic negative.
     cells = [round((1 - v / 255) * (len(ramp) - 1)) for v in lum.getdata()]
-    glyphs = "".join(ramp[i] for i in cells)
+    # one `cols`-wide line per row, not one flat run: the still is a <pre> that
+    # readers without JavaScript (or with reduced motion asked for) see, and a
+    # flat run renders as a single 4884-character line instead of a picture
+    glyphs = "\n".join(
+        "".join(ramp[i] for i in cells[r * cols : (r + 1) * cols]) for r in range(rows)
+    )
 
     # --- colours: median cut to a palette ascii.rest can carry (max 64) -----
     paletted = grid.quantize(colors=64, method=Image.MEDIANCUT)
@@ -309,10 +314,11 @@ export const meta = {{
 }};
 
 /** The finished picture, one `cols`-wide line per row. Also the no-JS and
- *  reduced-motion still, so those readers get the image rather than the noise. */
+ *  reduced-motion still, so those readers get the image rather than the noise.
+ *  The runtime indexes a flat run by cell, so the row breaks come back out. */
 export const still = {glyph_literal};
 
-const GLYPHS = still;
+const GLYPHS = still.replace(/\\n/g, "");
 const COLORS = Uint8Array.from(atob("{b64(indices)}"), (c) => c.charCodeAt(0));
 const RAMP = {ramp_literal};
 /* undecoded cells: a dim mid-tone, so the picture emerges rather than flashes */

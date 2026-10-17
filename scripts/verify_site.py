@@ -531,7 +531,7 @@ def main() -> int:
         # --- a note: the picture hangs on the desk, not at the top of the post -
         # the placement is the design, so measure the placement: a fixed layer
         # behind the windows, carrying the desktop pattern so its blend has a
-        # backdrop, mounted at the desk's width rather than the canvas's
+        # backdrop, covering the whole desk rather than mounting at the canvas's
         # intrinsic 300px, and blended differently on each desktop
         note_target = note_routes[0] if note_routes else "/notes/"
         page.evaluate("() => { try { localStorage.setItem('theme', 'paper'); } catch {} }")
@@ -549,6 +549,8 @@ def main() -> int:
                 z: cs ? parseInt(cs.zIndex, 10) : null,
                 dither: cs ? cs.backgroundImage.includes('svg') : false,
                 box: r ? [Math.round(r.width), Math.round(r.height)] : null,
+                vw: window.innerWidth,
+                vh: window.innerHeight,
                 blend: canvas ? getComputedStyle(canvas).mixBlendMode : null,
                 figures: document.querySelectorAll('.post-hero, .ascii-figure').length,
                 credit: (document.querySelector('.post-credit') || {}).textContent || '',
@@ -561,8 +563,11 @@ def main() -> int:
             str(desk_pic),
         )
         check(
-            desk_pic["dither"] and bool(desk_pic["box"]) and desk_pic["box"][0] > 1000,
-            "the picture is drawn on the desk at desk width, over its own dither",
+            desk_pic["dither"]
+            and bool(desk_pic["box"])
+            and desk_pic["box"][0] >= desk_pic["vw"]
+            and desk_pic["box"][1] >= desk_pic["vh"],
+            "the picture covers the whole desktop, over its own dither",
             str(desk_pic),
         )
         check(
@@ -588,6 +593,39 @@ def main() -> int:
             str(inverted_blend),
         )
         page.evaluate("() => { try { localStorage.setItem('theme', 'paper'); } catch {} }")
+
+        # a reader who asked for reduced motion (or has no JavaScript) keeps the
+        # <pre> still as the picture, so the still has to cover the desk too:
+        # its glyph block is sized from the grid to be viewport-covering
+        rm_ctx = browser.new_context(
+            viewport={"width": 1280, "height": 860}, reduced_motion="reduce"
+        )
+        rp = rm_ctx.new_page()
+        rp.goto(args.base_url + note_target, wait_until="networkidle")
+        rp.wait_for_timeout(700)
+        still_pic = rp.evaluate(
+            """() => {
+              const s = document.querySelector('.desk-art .art-still');
+              const r = s ? s.getBoundingClientRect() : null;
+              const c = document.querySelector('.desk-art canvas');
+              return {
+                box: r ? [Math.round(r.width), Math.round(r.height)] : null,
+                vw: window.innerWidth,
+                vh: window.innerHeight,
+                font: s ? getComputedStyle(s).fontSize : null,
+                canvasHidden: c ? c.hidden : null,
+              };
+            }"""
+        )
+        check(
+            bool(still_pic["box"])
+            and still_pic["box"][0] >= still_pic["vw"]
+            and still_pic["box"][1] >= still_pic["vh"]
+            and still_pic["canvasHidden"] is True,
+            "with reduced motion asked for, the still picture covers the desk too",
+            str(still_pic),
+        )
+        rm_ctx.close()
 
         browser.close()
 

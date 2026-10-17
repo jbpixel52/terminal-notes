@@ -5,8 +5,8 @@ about tech, servers and coding. Every note carries a picture — a photograph
 decoded onto a 132 × 37 character grid by `tools/make-art.py`, animated on a
 canvas by [ascii.rest](https://ascii.rest/) (piece contract and runtime by
 [@bas3line](https://github.com/bas3line), MIT) — and the picture hangs on the
-desktop behind the note's window, blended into the dither rather than framed at
-the top of the post.
+desktop behind the note's window, covering the whole of it and blended into the
+dither rather than framed at the top of the post.
 
 40 notes, 43 tags, 40 pictures. Static output: no server, no database, no
 analytics, no third-party scripts. The four bitmap faces are self-hosted too, so

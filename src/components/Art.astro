@@ -41,14 +41,23 @@ const source = getSource(slug);
 const aspect = meta.cols / (meta.rows * (meta.cell ?? 2));
 const alt = label ?? meta.note ?? `${slug}, as ascii art`;
 
-const stageStyle = `--art-cols: ${meta.cols}; --art-aspect: ${aspect}`;
+const stageStyle = `--art-cols: ${meta.cols}; --art-rows: ${meta.rows}; --art-aspect: ${aspect}`;
+
+// the piece keeps its glyphs as one flat run (the runtime indexes it by cell);
+// the <pre> needs the grid back, so re-break it into `cols`-wide rows — without
+// this the still was one 4884-character line instead of a picture
+const still = mod.still.includes("\n")
+  ? mod.still
+  : Array.from({ length: meta.rows }, (_, r) =>
+      mod.still.slice(r * meta.cols, (r + 1) * meta.cols),
+    ).join("\n");
 ---
 
 {
   framed ? (
     <figure class:list={['ascii-figure', className]}>
       <div class="art-stage" style={stageStyle}>
-        <pre class="art-still" role="img" aria-label={alt}>{mod.still}</pre>
+        <pre class="art-still" role="img" aria-label={alt}>{still}</pre>
         <canvas class="art-canvas" data-art={slug} hidden aria-hidden="true" />
       </div>
       <figcaption>
@@ -66,7 +75,7 @@ const stageStyle = `--art-cols: ${meta.cols}; --art-aspect: ${aspect}`;
   ) : (
     <div class:list={['art-bare', className]}>
       <div class="art-stage" style={stageStyle}>
-        <pre class="art-still" role="img" aria-label={alt}>{mod.still}</pre>
+        <pre class="art-still" role="img" aria-label={alt}>{still}</pre>
         <canvas class="art-canvas" data-art={slug} hidden aria-hidden="true" />
       </div>
     </div>
